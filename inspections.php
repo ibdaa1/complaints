@@ -18,6 +18,7 @@ function json_ok($payload = []) {
 
 function json_err($msg, $code = 400) {
     http_response_code($code);
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['success' => false, 'message' => $msg], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -71,9 +72,9 @@ if ($action === 'last_visit') {
 
     if (!$row) {
         json_ok(['data' => null, 'message' => 'No inspection found']);
+    } else {
+        json_ok(['data' => $row]);
     }
-
-    json_ok(['data' => $row]);
 }
 
 // action=actions - returns actions for a specific inspection
