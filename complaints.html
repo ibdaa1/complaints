@@ -23,7 +23,10 @@ button.clear{background:#fff;color:var(--accent);border:1px solid #ddd}
 .small{font-size:11px;color:var(--muted)}
 .table-wrap{overflow:auto;margin-top:12px;max-height:600px}
 table{width:100%;border-collapse:collapse;font-size:10px}
-th,td{border:1px solid #ddd;padding:4px 6px;text-align:right;vertical-align:top;white-space:normal;word-wrap:break-word;max-width:120px;line-height:1.3}
+th,td{border:1px solid #ddd;padding:4px 6px;text-align:right;vertical-align:top;white-space:normal;word-wrap:break-word;line-height:1.3}
+td{max-width:150px}
+td:nth-child(1),td:nth-child(4){max-width:100px}
+td:nth-child(8){max-width:180px}
 th{background:#f0f0f0;position:sticky;top:0;z-index:2;font-weight:700}
 tbody tr:hover{background:#f9f9f9}
 .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
@@ -292,11 +295,13 @@ async function preloadEstablishments(){
 }
 
 // Preload last inspections (type=شكوى) for each establishment
+// Note: Using get_inspections.php (available in repo) instead of inspections.php (not available)
+// get_inspections.php returns inspections filtered by inspection_type='شكوى' automatically
 async function preloadLastInspections(){
   const uids = Array.from(new Set(complaints.map(c => c.establishment_unique_id).filter(Boolean)));
   await Promise.all(uids.map(async uid => {
     if(lastInspections[uid] !== undefined) return;
-    // Try get_inspections.php which returns inspections for facility
+    // Use get_inspections.php which returns complaint-type inspections for facility
     const j = await fetchJson('get_inspections.php?facility_unique_id=' + encodeURIComponent(uid));
     if(j && j.success && Array.isArray(j.data) && j.data.length > 0){
       // Take the first (most recent) inspection
@@ -318,9 +323,11 @@ async function getEstablishment(uid){
 }
 
 // Fetch last inspection and actions for a unique_id
+// Note: Using get_inspections.php (available in repo) instead of inspections.php (not available)
 async function fetchLastInspectionAndActions(uid){
   if(!uid) return null;
   if(lastInspections[uid] !== undefined) return lastInspections[uid];
+  // Use get_inspections.php which returns complaint-type inspections for facility
   const j = await fetchJson('get_inspections.php?facility_unique_id=' + encodeURIComponent(uid));
   if(j && j.success && Array.isArray(j.data) && j.data.length > 0){
     const inspection = j.data[0];
