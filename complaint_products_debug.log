@@ -1,0 +1,51 @@
+[2025-11-26T15:29:19-05:00] === REQUEST START ===
+[2025-11-26T15:29:19-05:00] REQUEST_URI: /shjfcs/complaints/complaint_products.php?action=list&complaint_id=1
+[2025-11-26T15:29:19-05:00] METHOD: GET
+[2025-11-26T15:29:19-05:00] REMOTE_ADDR: 5.107.168.29
+[2025-11-26T15:29:19-05:00] SESSION user: {"EmpID":28332,"username":"28332","EmpName":"\u0645\u062d\u0645\u0648\u062f \u0645\u062d\u0645\u062f \u0639\u0628\u062f \u0627\u0644\u0645\u0642\u0635\u0648\u062f \u0632\u064a\u062f\u0627\u0646","SectorName":"\u0627\u0644\u0645\u062a\u0627\u0628\u0639\u0629 \u0648\u0627\u0644\u062a\u0637\u0648\u064a\u0631 \u0648\u0627\u0644\u0627\u064a\u0632\u0648","CanAdd":1,"CanEdit":1,"CanDelete":1,"CanSendWhatsApp":1,"IsLicenseManager":1,"IsLicenseInspector":1,"HasSignature":1,"IsSuperAdmin":1,"IsAdmin":1}
+[2025-11-26T15:29:19-05:00] POST: []
+[2025-11-26T15:29:19-05:00] GET: {"action":"list","complaint_id":"1"}
+[2025-11-26T15:29:19-05:00] RAW BODY: 
+[2025-11-26T15:29:19-05:00] ACTION list complaint_id=1
+[2025-11-26T15:29:19-05:00] LIST returned 0 rows
+[2025-11-26T15:32:23-05:00] === REQUEST START ===
+[2025-11-26T15:32:23-05:00] REQUEST_URI: /shjfcs/complaints/complaint_products.php?action=list&complaint_id=1
+[2025-11-26T15:32:23-05:00] METHOD: GET
+[2025-11-26T15:32:23-05:00] REMOTE_ADDR: 5.107.168.29
+[2025-11-26T15:32:23-05:00] SESSION user: {"EmpID":28332,"username":"28332","EmpName":"\u0645\u062d\u0645\u0648\u062f \u0645\u062d\u0645\u062f \u0639\u0628\u062f \u0627\u0644\u0645\u0642\u0635\u0648\u062f \u0632\u064a\u062f\u0627\u0646","SectorName":"\u0627\u0644\u0645\u062a\u0627\u0628\u0639\u0629 \u0648\u0627\u0644\u062a\u0637\u0648\u064a\u0631 \u0648\u0627\u0644\u0627\u064a\u0632\u0648","CanAdd":1,"CanEdit":1,"CanDelete":1,"CanSendWhatsApp":1,"IsLicenseManager":1,"IsLicenseInspector":1,"HasSignature":1,"IsSuperAdmin":1,"IsAdmin":1}
+[2025-11-26T15:32:23-05:00] POST: []
+[2025-11-26T15:32:23-05:00] GET: {"action":"list","complaint_id":"1"}
+[2025-11-26T15:32:23-05:00] RAW BODY: 
+[2025-11-26T15:32:23-05:00] ACTION list complaint_id=1
+[2025-11-26T15:32:23-05:00] LIST returned 0 rows
+[2025-11-26T15:32:42-05:00] === REQUEST START ===
+[2025-11-26T15:32:42-05:00] REQUEST_URI: /shjfcs/complaints/complaint_products.php?action=bulk_create
+[2025-11-26T15:32:42-05:00] METHOD: POST
+[2025-11-26T15:32:42-05:00] REMOTE_ADDR: 5.107.168.29
+[2025-11-26T15:32:42-05:00] SESSION user: {"EmpID":28332,"username":"28332","EmpName":"\u0645\u062d\u0645\u0648\u062f \u0645\u062d\u0645\u062f \u0639\u0628\u062f \u0627\u0644\u0645\u0642\u0635\u0648\u062f \u0632\u064a\u062f\u0627\u0646","SectorName":"\u0627\u0644\u0645\u062a\u0627\u0628\u0639\u0629 \u0648\u0627\u0644\u062a\u0637\u0648\u064a\u0631 \u0648\u0627\u0644\u0627\u064a\u0632\u0648","CanAdd":1,"CanEdit":1,"CanDelete":1,"CanSendWhatsApp":1,"IsLicenseManager":1,"IsLicenseInspector":1,"HasSignature":1,"IsSuperAdmin":1,"IsAdmin":1}
+[2025-11-26T15:32:42-05:00] POST: []
+[2025-11-26T15:32:42-05:00] GET: {"action":"bulk_create"}
+[2025-11-26T15:32:42-05:00] RAW BODY: {"complaint_id":1,"products":[{"product_name":"محمد محمود زيدان","brand_name":"hghg","sample_type":"ب","country_of_origin":"United Arab Emirates","production_date":"2025-11-27","expiry_date":"2025-11-27","weight":"","batch_number":"","lab_result":"11","notes":"11"}]}
+[2025-11-26T15:32:42-05:00] ACTION bulk_create
+[2025-11-26T15:32:42-05:00] bulk_create exception: mysqli_stmt::bind_param(): Argument #13 cannot be passed by reference
+[2025-11-26T15:32:58-05:00] === REQUEST START ===
+[2025-11-26T15:32:58-05:00] REQUEST_URI: /shjfcs/complaints/complaint_products.php?action=bulk_create
+[2025-11-26T15:32:58-05:00] METHOD: GET
+[2025-11-26T15:32:58-05:00] REMOTE_ADDR: 5.107.168.29
+[2025-11-26T15:32:58-05:00] SESSION user: {"EmpID":28332,"username":"28332","EmpName":"\u0645\u062d\u0645\u0648\u062f \u0645\u062d\u0645\u062f \u0639\u0628\u062f \u0627\u0644\u0645\u0642\u0635\u0648\u062f \u0632\u064a\u062f\u0627\u0646","SectorName":"\u0627\u0644\u0645\u062a\u0627\u0628\u0639\u0629 \u0648\u0627\u0644\u062a\u0637\u0648\u064a\u0631 \u0648\u0627\u0644\u0627\u064a\u0632\u0648","CanAdd":1,"CanEdit":1,"CanDelete":1,"CanSendWhatsApp":1,"IsLicenseManager":1,"IsLicenseInspector":1,"HasSignature":1,"IsSuperAdmin":1,"IsAdmin":1}
+[2025-11-26T15:32:58-05:00] POST: []
+[2025-11-26T15:32:58-05:00] GET: {"action":"bulk_create"}
+[2025-11-26T15:32:58-05:00] RAW BODY: 
+[2025-11-26T15:32:58-05:00] ACTION bulk_create
+[2025-11-26T15:34:12-05:00] bulk_create success: complaint_id=1 count=1
+[2025-11-26T15:49:50-05:00] Inserted product id=2 for complaint_id=1 by emp=28332
+[2025-11-26T15:54:30-05:00] bulk_create success: complaint_id=2 count=1
+[2025-11-26T15:54:37-05:00] Inserted product id=4 for complaint_id=2 by emp=28332
+[2025-11-27T10:37:13-05:00] bulk_create success: complaint_id=2 count=2
+[2025-11-27T10:37:29-05:00] bulk_create success: complaint_id=2 count=4
+[2025-11-27T11:20:36-05:00] Deleted product id=9
+[2025-11-27T11:20:40-05:00] Deleted product id=8
+[2025-11-27T11:20:48-05:00] Deleted product id=6
+[2025-11-27T12:01:58-05:00] Inserted product id=11 for complaint_id=3 by emp=28332
+[2025-11-27T12:18:45-05:00] Inserted product id=12 for complaint_id=4 by emp=28332
+[2025-11-27T12:44:47-05:00] bulk_create success: complaint_id=5 count=2
