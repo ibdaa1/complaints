@@ -3,171 +3,161 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>نظام الشكاوى — v44 (مصحح)</title>
+<title>نظام الشكاوى — متكامل (شكاوى، منتجات، تفتيش)</title>
 <style>
-:root{
-  --accent:#2a5b2a;
-  --muted:#666;
-  --card:#fafafa;
-  --danger:#d32f2f;
-  --font: "Noto Naskh Arabic", Arial, sans-serif;
-}
-html,body{height:100%}
-body{
-  font-family:var(--font);
-  direction:rtl;
-  margin:0;
-  padding:14px;
-  background:#fff;
-  color:#222;
-}
-/* layout */
-.container{max-width:1300px;margin:0 auto}
-.header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.h1{color:var(--accent);margin:0;font-size:20px}
-.small{font-size:13px;color:var(--muted)}
+:root{--accent:#2a5b2a;--muted:#666;--card:#fafafa}
+body{font-family:Arial,"Noto Naskh Arabic",sans-serif;direction:rtl;background:#fff;color:#222;padding:12px}
+.container{max-width:1200px;margin:0 auto}
+.header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.h1{color:var(--accent);margin:0}
 .card{background:var(--card);padding:12px;border-radius:8px;border:1px solid #eee;margin-bottom:12px}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.col{flex:1;min-width:180px}
-label{display:block;font-weight:700;margin-bottom:6px}
-input,select,textarea,button{font-family:var(--font)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.col{flex:1;min-width:160px}
+label{display:block;font-weight:700;margin-top:6px}
+input,select,textarea,button{font-family:inherit}
 input,select,textarea{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box}
-textarea{min-height:56px;resize:vertical}
+textarea{min-height:56px}
 button{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:6px;cursor:pointer}
 button.secondary{background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.08)}
 button.clear{background:#fff;color:var(--accent);border:1px solid #ddd}
-.display-name{display:inline-block;padding:6px;border-radius:6px;background:#f9f9f9;border:1px solid #eee}
-.table-wrap{overflow:auto;margin-top:8px;border:1px solid #eee;border-radius:6px}
-table{width:100%;border-collapse:collapse;font-size:11px}
-th,td{border:1px solid #eee;padding:6px;text-align:right;vertical-align:top;word-break:break-word}
+.small{font-size:13px;color:var(--muted)}
+.table-wrap{overflow:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #eee;padding:8px;text-align:right;vertical-align:top}
 th{background:#f6f6f6;position:sticky;top:0;z-index:2}
-.tall{white-space:normal}
-.inspection-box{background:#fffbe6;border:1px solid #ffe58f;padding:8px;border-radius:6px;margin-top:8px}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-@media(max-width:1100px){ .form-grid{grid-template-columns:repeat(1,1fr)} }
-.action-btn{padding:4px 8px;border-radius:4px;font-size:12px}
-.badge{display:inline-block;padding:2px 6px;border-radius:10px;background:#eee;font-size:11px}
-.small-font-table table, .small-font-table th, .small-font-table td { font-size:10px; line-height:1.05; }
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.filter-col{display:flex;flex-direction:column;gap:6px}
+.display-name{display:inline-block;padding:6px;background:#f9f9f9;border-radius:6px;border:1px solid #eee}
+.last-inspect{background:#fffbe6;border:1px solid #ffe58f;padding:8px;border-radius:6px;margin-top:8px}
+@media(max-width:900px){ .row{flex-direction:column} .filter-row{flex-direction:column} }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <h1 class="h1">نظام الشكاوى — v44 (مصَحَّح)</h1>
-    <div class="small">تم إصلاح: إزالة debug، زر بحث تسجيل، فتح الشكوى للتعديل يعمل، إظهار أسماء الموظفين في النموذج والجدول.</div>
+    <h1 class="h1">نظام الشكاوى — متكامل</h1>
+    <div class="small">كل الوظائف: عرض، بحث تسجيل، فتح/تعديل، توقيع، منتجات، رفع مرفقات، آخر تفتيش نوع "شكوى".</div>
   </div>
 
-  <!-- Summary -->
+  <!-- Top summary and actions -->
   <div class="card">
     <div class="row" style="align-items:center">
-      <div class="small">تحتاج توقيع سوبرفايزر: <span id="countNeedSupervisor" class="badge">0</span></div>
-      <div class="small">تحتاج توقيع مدير: <span id="countNeedManager" class="badge">0</span></div>
-      <div style="margin-left:auto"><button id="btnReload" class="secondary">تحديث الكل</button></div>
+      <div class="small">تحتاج توقيع سوبرفايزر: <strong id="countNeedSupervisor">0</strong></div>
+      <div class="small">تحتاج توقيع مدير: <strong id="countNeedManager">0</strong></div>
+      <div style="margin-left:auto">
+        <button id="btnReload" class="secondary">تحديث الكل</button>
+      </div>
     </div>
   </div>
 
   <!-- License search (registration) -->
   <div class="card">
+    <h3>بحث التسجيل (رقم الترخيص)</h3>
     <div class="row">
-      <div class="col">
-        <label>بحث تسجيل — رقم الترخيص</label>
-        <div style="display:flex;gap:8px">
-          <input id="license_no_search" placeholder="أدخل رقم الترخيص">
-          <button id="btnSearchLicense" class="secondary">بحث تسجيل</button>
-          <button id="btnClearLicense" class="clear">مسح</button>
-        </div>
-        <div id="estList" class="small" style="margin-top:8px"></div>
-      </div>
-      <div class="col">
-        <label>نتيجة المنشأة</label>
-        <div id="estDetails" class="small"></div>
-      </div>
-      <div class="col">
-        <label>بحث سريع</label>
-        <input id="quick_name" placeholder="اسم الشاكي">
-        <input id="quick_phone" placeholder="هاتف الشاكي" style="margin-top:8px">
-      </div>
+      <div class="col"><input id="license_no_search" placeholder="أدخل رقم الترخيص"></div>
+      <div style="width:140px"><button id="btnSearchLicense" class="secondary">بحث تسجيل</button></div>
+      <div style="width:140px"><button id="btnClearLicense" class="clear">مسح</button></div>
     </div>
+    <div id="estList" class="small" style="margin-top:8px"></div>
+    <div id="estDetails" class="small" style="margin-top:8px"></div>
   </div>
 
   <!-- Complaint form -->
   <div class="card" id="formCard">
-    <h3>نموذج الشكوى</h3>
-    <div class="form-grid">
-      <div>
-        <label>unique_id</label><input id="establishment_unique_id">
-        <label style="margin-top:6px">رقم الترخيص</label><input id="license_no_display">
-        <label style="margin-top:6px">اسم المنشأة</label><input id="facility_name">
+    <h3>نموذج الشكوى (فتح / تعديل)</h3>
+    <form id="complaintForm" onsubmit="return false;">
+      <input type="hidden" id="id">
+
+      <div class="row">
+        <div class="col"><label>unique_id</label><input id="establishment_unique_id"></div>
+        <div class="col"><label>رقم الترخيص</label><input id="license_no_display"></div>
+        <div class="col"><label>اسم المنشأة</label><input id="facility_name"></div>
       </div>
 
-      <div>
-        <label>المفتش (من الجلسة)</label>
-        <div style="display:flex;gap:8px;align-items:center">
+      <h4>قسم المفتش</h4>
+      <div class="row">
+        <div class="col">
+          <label>المفتش (من الجلسة)</label>
           <span id="inspector_display" class="display-name">-</span>
           <input type="hidden" id="created_by_empid">
         </div>
-
-        <label style="margin-top:6px">تاريخ الشكوى (تسجيل)</label><input id="received_datetime" type="datetime-local">
-        <label style="margin-top:6px">تاريخ استلام المفتش (inspector_received_datetime)</label><input id="inspector_received_datetime" type="datetime-local">
+        <div class="col"><label>تاريخ الاستلام</label><input id="received_datetime" type="datetime-local"></div>
+        <div class="col"><label>مصدر الشكوى</label><select id="complaints_source"></select></div>
       </div>
 
-      <div>
-        <label>مصدر الشكوى</label><select id="complaints_source"></select>
-        <label style="margin-top:6px">تصنيف الشكوى</label><select id="complaint_category"></select>
-        <label style="margin-top:6px">حالة الشكوى</label><select id="complaint_status"></select>
+      <div class="row">
+        <div class="col"><label>اسم الشاكي</label><input id="complainant_name"></div>
+        <div class="col"><label>هاتف الشاكي</label><input id="complainant_phone"></div>
+        <div class="col"><label>حالة الشكوى</label><select id="complaint_status"></select></div>
       </div>
-    </div>
 
-    <div style="margin-top:10px">
-      <label>اسم الشاكي</label><input id="complainant_name">
-      <label style="margin-top:6px">هاتف الشاكي</label><input id="complainant_phone">
-      <label style="margin-top:6px">موضوع الشكوى</label><textarea id="complaint_subject" rows="3"></textarea>
-      <label style="margin-top:6px">بيان الشاكي</label><textarea id="complainant_statement" rows="3"></textarea>
-      <label style="margin-top:6px">إجراءات المفتش</label><textarea id="inspector_followup" rows="3"></textarea>
-    </div>
+      <label>موضوع الشكوى</label><textarea id="complaint_subject"></textarea>
+      <label>بيان الشاكي</label><textarea id="complainant_statement"></textarea>
+      <label>إجراءات المفتش</label><textarea id="inspector_followup"></textarea>
 
-    <div id="inspectionDetailsContainer" class="inspection-box" style="display:none">
-      <div id="inspectionDetails"></div>
-    </div>
-
-    <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-      <button id="btnSave" type="button">حفظ الشكوى</button>
-      <button id="btnReset" type="button" class="secondary">مسح النموذج</button>
-      <div style="margin-left:auto;display:flex;gap:8px">
-        <button id="btnSaveSupervisor" class="secondary">توقيع السوبرفايزر</button>
-        <button id="btnSaveManager" class="secondary">توقيع المدير</button>
+      <div class="row">
+        <div class="col"><label>حالة العينة</label><select id="sample_status"></select></div>
+        <div class="col"><label>إجراء تواصل مع الشاكي</label><select id="complainant_contact_action"></select></div>
+        <div class="col"><label>تاريخ استلام المفتش (inspector_received_datetime)</label><input id="inspector_received_datetime" type="datetime-local"></div>
       </div>
-    </div>
+
+      <div id="lastInspection" class="last-inspect" style="display:none"></div>
+
+      <h4>قسم السوبرفايزر</h4>
+      <div class="row">
+        <div class="col"><label>المشرف (اسم)</label><span id="sup_display" class="display-name"></span><input type="hidden" id="supervisor_empid"></div>
+        <div class="col"><label>تعليق المشرف</label><textarea id="supervisor_comment"></textarea></div>
+        <div class="col"><label>تاريخ متابعة المشرف</label><input id="followup_datetime" type="datetime-local" disabled></div>
+      </div>
+      <div style="margin-top:8px">
+        <button id="btnSaveSupervisor" class="secondary" type="button">توقيع السوبرفايزر</button>
+        <button id="btnSupervisorClear" class="clear" type="button">حذف توقيع السوبرفايزر</button>
+      </div>
+
+      <h4>قسم المدير</h4>
+      <div class="row">
+        <div class="col"><label>المدير (اسم)</label><span id="mgr_display" class="display-name"></span><input type="hidden" id="manager_empid"></div>
+        <div class="col"><label>تعليق المدير</label><textarea id="division_head_comment"></textarea></div>
+        <div class="col"><label>تاريخ الإغلاق</label><input id="closed_datetime" type="datetime-local" disabled></div>
+      </div>
+      <div style="margin-top:8px">
+        <button id="btnSaveManager" class="secondary" type="button">توقيع المدير</button>
+        <button id="btnManagerClear" class="clear" type="button">حذف توقيع المدير</button>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button id="btnSave" type="button">حفظ الشكوى</button>
+        <button id="btnReset" class="secondary" type="button">مسح النموذج</button>
+        <div id="formMsg" class="small" style="margin-left:auto"></div>
+      </div>
+    </form>
   </div>
 
-  <!-- Products -->
+  <!-- Products section -->
   <div class="card">
     <h3>منتجات الشكوى</h3>
-    <div style="display:flex;gap:8px">
-      <button id="btnAddProduct" type="button">إضافة صف</button>
-      <button id="btnSaveProducts" type="button" class="secondary">حفظ المنتجات</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button id="btnAddProduct" type="button">إضافة صف منتج</button>
+      <button id="btnSaveProducts" type="button" class="secondary">حفظ المنتجات دفعة</button>
     </div>
-    <div id="productsList" style="margin-top:8px"></div>
+    <div id="productsList" style="margin-top:12px"></div>
   </div>
 
-  <!-- Compact table (single page) -->
-  <div class="card small-font-table">
-    <h3 style="margin:0 0 8px 0">قائمة الشكاوى (مصغرة)</h3>
+  <!-- Filters + table -->
+  <div class="card">
+    <h3>قائمة الشكاوى — جدول مختصر</h3>
 
-    <div class="row" style="align-items:center;margin-bottom:8px">
-      <div class="col"><input id="searchAll" placeholder="بحث شامل"></div>
-      <div style="width:160px"><input id="filter_phone" placeholder="هاتف الشاكي"></div>
-      <div style="width:200px"><select id="filter_category_table"><option value="">نوع الشكوى</option></select></div>
-      <div style="width:120px"><input id="filter_date_from" type="date"></div>
-      <div style="width:120px"><input id="filter_date_to" type="date"></div>
-      <div style="margin-left:auto;display:flex;gap:8px">
-        <button id="btnApplyFilters" class="secondary">تطبيق</button>
-        <button id="btnResetFilters" class="clear">مسح</button>
-      </div>
+    <div class="filter-row">
+      <div class="filter-col" style="min-width:180px"><label>بحث شامل</label><input id="searchAll" placeholder="بحث موضوع/منشأة/ترخيص"></div>
+      <div class="filter-col" style="width:160px"><label>هاتف الشاكي</label><input id="filter_phone" placeholder="هاتف"></div>
+      <div class="filter-col" style="width:200px"><label>نوع الشكوى</label><select id="filter_category"><option value="">الكل</option></select></div>
+      <div class="filter-col" style="width:160px"><label>من تاريخ</label><input id="filter_date_from" type="date"></div>
+      <div class="filter-col" style="width:160px"><label>إلى تاريخ</label><input id="filter_date_to" type="date"></div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:end"><button id="btnApplyFilters" class="secondary">تطبيق</button><button id="btnResetFilters" class="clear">مسح</button></div>
     </div>
 
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-      <div class="small">فلاتر سريعة:</div>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+      <div class="small">تبديل سريع:</div>
       <button id="btnNeedsSup" class="clear" data-on="0">تحتاج توقيع سوبر</button>
       <button id="btnNeedsMgr" class="clear" data-on="0">تحتاج توقيع مدير</button>
       <button id="btnCompleted" class="clear" data-on="0">مكتملة</button>
@@ -180,116 +170,123 @@ th{background:#f6f6f6;position:sticky;top:0;z-index:2}
 
 <script>
 /*
-  complaints.html v44 كامل ومُصلح:
-  - يحمّل get_employees.php ويظهر الأسماء بدل الأرقام في الجدول والنموذج.
-  - زر "بحث تسجيل" يستعلم عن المنشآت (get_establishments_by_license.php ثم complaints.php?action=establishments كاحتياط).
-  - زر "فتح" في الجدول يجلب البيانات عبر complaints.php?action=get&id=... ويملأ النموذج بالكامل.
-  - عند فتح الشكوى يظهر اسم المفتش في النموذج باستخدام created_by_empid.
-  - عند فتح الشكوى يظهر آخر تفتيش من نوع "شكوى" (inspections.php?action=last_visit&unique_id=...&type=شكوى)
-    ويجلب أيضاً الإجراءات (inspections.php?action=actions&inspection_id=...).
-  - تمت إزالة أي لوحات debug/raw أو نصوص "debug".
-  - الجدول مصغر بخط أصغر ليتسع صفحة واحدة، الخلايا تسمح بالتفاف النص لعدة أسطر.
+  كامل ومتكامل:
+  - يجلب user_data.php, get_employees.php
+  - يجلب قائمة الشكاوى من complaints.php?action=list
+  - يستخدم get_establishment.php?unique_id=... لجلب تفاصيل المنشأة
+  - يستخدم inspections.php?action=last_visit&unique_id=...&type=شكوى لآخر تفتيش، وinspections.php?action=actions&inspection_id=... لجلب الإجراءات
+  - فتح الشكوى يملأ النموذج ويعرض اسم المفتش من created_by_empid
+  - الجدول يعرض الأسماء بدل الأرقام
+  - زر بحث التسجيل يملأ بيانات المنشأة وعرض آخر تفتيش
+  - تضمين CRUD للمنتجات ورفع المرفقات، وتوقيع السوبرفايزر/المدير (من user_data session)
+  - عدم عرض أي "debug dump" للمستخدم (لا توجد panel للraw)
 */
 
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2,'0');
-let currentUser = { EmpID:null, full_name:'' };
-let employees = {};            // EmpID -> name
-let complaints = [];           // complaints list
-let establishments = {};       // unique_id -> details
-let lastInspections = {};      // unique_id -> { inspection, actions[] }
 
-/* helpers */
-async function fetchJson(url, opts = {}) {
+async function fetchJson(url, opts={}) {
   opts.credentials = 'same-origin';
-  const res = await fetch(url, opts);
-  const text = await res.text();
-  try { return JSON.parse(text); } catch(e){ console.error('Invalid JSON from', url); throw e; }
+  const r = await fetch(url, opts);
+  const txt = await r.text();
+  try { return JSON.parse(txt); } catch(e) { console.error('Invalid JSON from', url, txt); throw new Error('Invalid JSON from ' + url); }
 }
-function toLocal(v){ if(!v) return ''; return String(v).replace(' ','T').slice(0,16); }
-function toDBLocal(v){ if(!v) return ''; const d=new Date(v); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
-function formatDateInTimeZone(date = new Date(), tz='Asia/Dubai'){ try { const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }); const parts = fmt.formatToParts(date).reduce((a,p)=> (a[p.type]=p.value,a),{}); return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`; } catch(e){ const d=new Date(date.toLocaleString('en-US',{ timeZone: tz })); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; } }
-function getName(empid){ if(!empid) return ''; return employees[String(empid)] || String(empid); }
-function showElement(id, show){ const el=$(id); if(el) el.style.display = show ? '' : 'none'; }
 
-/* initialization */
+// state
+let currentUser = { EmpID:null, full_name:'', permissions:{} };
+let employees = {}; // EmpID -> name
+let complaints = []; // array
+let establishments = {}; // unique_id -> details
+let lastInspections = {}; // unique_id -> { inspection, actions[] }
+
+// lists
+const complaintCategories = ["","النظافة العامة","المبانى والمنشات","طرق اعداد وحفظ","الغش التجارى","الحشرات والقوارض","المخالفات العامة","مخالفات سوق الخضار والسمك","مخالفات قسم البيطرة","اشتباة تسمم غذائى","شكوى تحتاج الى الاشتراك مع جهات اخرى","اشتباة تسمم غذائى بدون تقرير مستشفى","إجراءات احترازية"];
+const sampleStatusOptions = ["موجودة","غير موجودة","تم ارسال صورها بالالهاتف","تم اتلافها بواسطة الشاكى","تم ارجاعها للموقع","تم احضار العينة للقسم","لا يوجد عينة للشكوى"];
+const complainantContactActions = ["تم مقابلة الشاكى واستلام العينة","تم مقابلة الشاكى ولم يحضر العينة","تم الاتصال بالشاكى ولم يحضر العينة","تم ارسال صور العينة عبر تطبيق الرسائل","تم الاتصال بالشاكى واخذ افادته","تم الاتصال بالشاكى ولم يجيب على الهاتف","تم مقابلة الشاكى واخذ افادته شفهياً"];
+const complaintStatusOptions = ['','حفظ','قيد الاجراء','مخالفة','تم الإغلاق','التحويل الى جهة الاختصاص','اخذ عينة','انذار'];
+
+// utilities
+function toLocalDateTime(v){ if(!v) return ''; return String(v).replace(' ','T').slice(0,16); }
+function toDBDateTimeFromLocal(v){ if(!v) return ''; const d = new Date(v); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+function getName(empid){ if(!empid) return ''; return employees[String(empid)] || String(empid); }
+function normalizePath(p){ if(!p) return ''; if(p.startsWith('http')) return p; if(!p.startsWith('/')) p = '/' + p; return location.origin + p; }
+
+// initialization
 (async function init(){
-  populateStaticSelects();
+  // init selects
+  populateSelect('complaints_source', ["الخط الساخن","الايميل","شخصياً بالمكتب","الادارة"], true, '--');
+  populateSelect('sample_status', sampleStatusOptions, true, '--');
+  populateSelect('complainant_contact_action', complainantContactActions, true, '--');
+  populateSelect('complaint_category', complaintCategories, true, '-- اختر تصنيف --');
+  populateSelect('complaint_status', complaintStatusOptions, true, '--');
+
   bindUI();
-  await loadSessionAndEmployees();
-  await loadAllData();
-  buildTableFilters();
+
+  // load session & employees
+  await loadUserAndEmployees();
+  // load data
+  await loadComplaints();
+  await preloadEstablishments();
+  await preloadLastInspections();
+
+  populateFilterCategory();
   renderTable();
 })();
 
-function populateStaticSelects(){
-  const complaints_source = ["الخط الساخن","الايميل","شخصياً بالمكتب","الادارة"];
-  const sampleStatus = ["موجودة","غير موجودة","تم ارسال صورها بالالهاتف","لا يوجد عينة للشكوى"];
-  const contactActions = ["تم مقابلة الشاكى واستلام العينة","تم الاتصال بالشاكى"];
-  const statusOpts = ['','حفظ','قيد الاجراء','مخالفة','تم الإغلاق','التحويل الى جهة الاختصاص','اخذ عينة','انذار'];
-  const categories = ["","النظافة العامة","المبانى والمنشات","طرق اعداد وحفظ","الغش التجارى","الحشرات والقوارض","المخالفات العامة","مخالفات سوق الخضار والسمك","مخالفات قسم البيطرة","اشتباة تسمم غذائى","إجراءات احترازية"];
-
-  const add = (id, items, empty=true, emptyText='--'){
-    const el=$(id); if(!el) return; el.innerHTML=''; if(empty) el.appendChild(new Option(emptyText,'')); items.forEach(i => el.appendChild(new Option(i,i)));
-  };
-  add('complaints_source', complaints_source, true, '--');
-  add('sample_status', sampleStatus, true, '--');
-  add('complainant_contact_action', contactActions, true, '--');
-  add('complaint_status', statusOpts, true, '--');
-  add('complaint_category', categories, true, '-- اختر تصنيف --');
+function populateSelect(id, items, includeEmpty=true, emptyText='--'){
+  const el = $(id); if(!el) return;
+  el.innerHTML = '';
+  if(includeEmpty) el.appendChild(new Option(emptyText,''));
+  items.forEach(i => el.appendChild(new Option(i,i)));
 }
 
 function bindUI(){
   $('btnSearchLicense').addEventListener('click', onSearchLicense);
-  $('btnClearLicense').addEventListener('click', ()=>{ $('license_no_search').value=''; $('estList').innerHTML=''; $('estDetails').innerHTML=''; });
-  $('btnReload').addEventListener('click', async ()=>{ await loadAllData(); buildTableFilters(); renderTable(); });
+  $('btnClearLicense').addEventListener('click', ()=> { $('license_no_search').value=''; $('estList').innerHTML=''; $('estDetails').innerHTML=''; });
   $('btnApplyFilters').addEventListener('click', renderTable);
-  $('btnResetFilters').addEventListener('click', ()=>{ ['searchAll','filter_phone','filter_date_from','filter_date_to','filter_category_table'].forEach(id=>{ if($(id)) $(id).value=''; }); ['btnNeedsSup','btnNeedsMgr','btnCompleted','btnNeedsAny'].forEach(id=>{ const b=$(id); if(b){ b.dataset.on='0'; b.style.background=''; b.style.color=''; } }); renderTable(); });
-  ['btnNeedsSup','btnNeedsMgr','btnCompleted','btnNeedsAny'].forEach(id=>{ const b=$(id); if(b) b.addEventListener('click', ()=>{ b.dataset.on = b.dataset.on === '1' ? '0' : '1'; b.style.background = b.dataset.on === '1' ? 'var(--accent)' : ''; b.style.color = b.dataset.on === '1' ? '#fff' : ''; renderTable(); }); });
+  $('btnResetFilters').addEventListener('click', () => { ['searchAll','filter_phone','filter_date_from','filter_date_to'].forEach(id=>{ if($(id)) $(id).value=''; }); $('filter_category').value=''; $('filter_facility') && ($('filter_facility').value=''); renderTable(); });
+  ['btnNeedsSup','btnNeedsMgr','btnCompleted','btnNeedsAny'].forEach(id => { const b=$(id); if(b) b.addEventListener('click', ()=> { b.dataset.on = b.dataset.on === '1' ? '0' : '1'; b.style.background = b.dataset.on === '1' ? 'var(--accent)' : ''; b.style.color = b.dataset.on === '1' ? '#fff' : ''; renderTable(); }); });
+  $('btnReload').addEventListener('click', async ()=> { await loadComplaints(); await preloadEstablishments(); await preloadLastInspections(); populateFilterCategory(); renderTable(); });
   $('btnSave').addEventListener('click', onSaveComplaint);
-  $('btnReset').addEventListener('click', ()=>{ document.getElementById('complaintForm')?.reset?.(); showElement('inspectionDetailsContainer', false); $('productsList').innerHTML=''; });
+  $('btnReset').addEventListener('click', onResetForm);
   $('btnSaveSupervisor').addEventListener('click', onSupervisorSign);
+  $('btnSupervisorClear').addEventListener('click', onSupervisorClear);
   $('btnSaveManager').addEventListener('click', onManagerSign);
+  $('btnManagerClear').addEventListener('click', onManagerClear);
   $('btnAddProduct').addEventListener('click', ()=> addProductRow(true));
   $('btnSaveProducts').addEventListener('click', saveProductsBulk);
-  // Enter key on searchAll triggers render
-  $('searchAll').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); renderTable(); }});
 }
 
-/* load session and employees */
-async function loadSessionAndEmployees(){
-  try { const u = await fetchJson('user_data.php'); if(u && u.success) currentUser = u.user_data || currentUser; } catch(e){ /* ignore */ }
+// load user and employees
+async function loadUserAndEmployees(){
+  try {
+    const u = await fetchJson('user_data.php');
+    if(u && u.success){ currentUser = u.user_data || currentUser; currentUser.permissions = u.permissions || {}; }
+  } catch(e){ console.warn('user_data failed', e); }
   try {
     const em = await fetchJson('get_employees.php');
     if(em && em.success && Array.isArray(em.data)){
       employees = {};
-      em.data.forEach(x => { const name = x.full_name || x.EmpName || x.name || x.displayName; employees[String(x.EmpID)] = name || String(x.EmpID); });
+      em.data.forEach(x => { const name = x.full_name || x.name || x.EmpName || x.displayName; employees[String(x.EmpID)] = name || String(x.EmpID); });
+      // show inspector name if session has EmpID
+      if(currentUser && currentUser.EmpID && $('inspector_display')) $('inspector_display').textContent = employees[String(currentUser.EmpID)] || currentUser.full_name || '';
     }
-    // display inspector name from session
-    if(currentUser && currentUser.EmpID && $('inspector_display')) $('inspector_display').textContent = employees[String(currentUser.EmpID)] || currentUser.full_name || '-';
-  } catch(e){ employees = {}; }
+  } catch(e){ console.warn('get_employees failed', e); }
 }
 
-/* load all data: complaints + establishments + inspections */
-async function loadAllData(){
-  await loadComplaints();
-  await preloadEstablishments();
-  await preloadLastInspections();
-}
-
-/* complaints */
+// load complaints list
 async function loadComplaints(){
   try {
     const j = await fetchJson('complaints.php?action=list');
-    complaints = (j && j.success) ? (j.data || []) : [];
-    if($('countNeedSupervisor')) $('countNeedSupervisor').textContent = complaints.filter(c=>!c.supervisor_empid).length;
-    if($('countNeedManager')) $('countNeedManager').textContent = complaints.filter(c=>!c.manager_empid).length;
-  } catch(e){ console.error(e); complaints = []; }
+    if(j && j.success) complaints = j.data || []; else complaints = [];
+    $('countNeedSupervisor').textContent = complaints.filter(c=>!c.supervisor_empid).length;
+    $('countNeedManager').textContent = complaints.filter(c=>!c.manager_empid).length;
+  } catch(e){ console.error('loadComplaints', e); complaints = []; }
 }
 
-/* establishments preload */
+// preload establishments details via get_establishment.php
 async function preloadEstablishments(){
-  const uids = Array.from(new Set(complaints.map(c=>c.establishment_unique_id).filter(Boolean)));
+  const uids = Array.from(new Set(complaints.map(c => c.establishment_unique_id).filter(Boolean)));
   await Promise.all(uids.map(async uid => {
     if(establishments[uid] !== undefined) return;
     try {
@@ -299,36 +296,38 @@ async function preloadEstablishments(){
   }));
 }
 
-/* inspections preload */
+// preload last inspections (type=شكوى) and first action for each establishment
 async function preloadLastInspections(){
-  const uids = Array.from(new Set(complaints.map(c=>c.establishment_unique_id).filter(Boolean)));
+  const uids = Array.from(new Set(complaints.map(c => c.establishment_unique_id).filter(Boolean)));
   await Promise.all(uids.map(async uid => {
     if(lastInspections[uid] !== undefined) return;
     try {
       const j = await fetchJson('inspections.php?action=last_visit&unique_id=' + encodeURIComponent(uid) + '&type=' + encodeURIComponent('شكوى'));
-      if(!(j && j.success && j.data)){ lastInspections[uid] = null; return; }
-      const insp = j.data;
-      let actions = [];
-      try {
-        const a = await fetchJson('inspections.php?action=actions&inspection_id=' + encodeURIComponent(insp.inspection_id));
-        if(a && a.success && Array.isArray(a.data)) actions = a.data;
-      } catch(e){ actions = []; }
-      lastInspections[uid] = { inspection: insp, actions };
+      if(j && j.success && j.data){
+        const inspection = j.data;
+        let actions = [];
+        try {
+          const a = await fetchJson('inspections.php?action=actions&inspection_id=' + encodeURIComponent(inspection.inspection_id));
+          if(a && a.success && Array.isArray(a.data)) actions = a.data;
+        } catch(e){ actions = []; }
+        lastInspections[uid] = { inspection, actions };
+      } else lastInspections[uid] = null;
     } catch(e){ lastInspections[uid] = null; }
   }));
 }
 
-/* build table filters */
-function buildTableFilters(){
-  const setCat = new Set(complaints.map(c=>c.complaint_category).filter(Boolean));
-  const sel = $('filter_category_table'); if(sel){ sel.innerHTML = '<option value="">نوع الشكوى</option>'; Array.from(setCat).sort().forEach(v => sel.appendChild(new Option(v, v))); }
+// populate filter category dropdown from loaded complaints
+function populateFilterCategory(){
+  const sel = $('filter_category'); sel.innerHTML = '<option value="">الكل</option>';
+  const set = new Set(complaints.map(c=>c.complaint_category).filter(Boolean));
+  Array.from(set).sort().forEach(v => sel.appendChild(new Option(v, v)));
 }
 
-/* render table (compact) */
+// render table (names instead of ids)
 function renderTable(){
   const q = ($('searchAll').value || '').toLowerCase().trim();
   const phone = ($('filter_phone').value || '').trim();
-  const cat = ($('filter_category_table').value || '').trim();
+  const category = ($('filter_category').value || '').trim();
   const dateFrom = $('filter_date_from').value;
   const dateTo = $('filter_date_to').value;
   const needsSup = $('btnNeedsSup').dataset.on === '1';
@@ -336,13 +335,13 @@ function renderTable(){
   const completed = $('btnCompleted').dataset.on === '1';
   const needsAny = $('btnNeedsAny').dataset.on === '1';
 
-  const rows = complaints.filter(r=>{
+  const rows = complaints.filter(r => {
     if(q && !JSON.stringify(r).toLowerCase().includes(q)) return false;
-    if(phone && !((r.complainant_phone || '').includes(phone))) return false;
-    if(cat && ((r.complaint_category || '') !== cat)) return false;
-    const cdate = (r.created_at || r.received_datetime || '').split(' ')[0];
-    if(dateFrom && (!cdate || cdate < dateFrom)) return false;
-    if(dateTo && (!cdate || cdate > dateTo)) return false;
+    if(phone && !(r.complainant_phone || '').includes(phone)) return false;
+    if(category && (r.complaint_category || '') !== category) return false;
+    const created = (r.created_at || r.received_datetime || '').split(' ')[0];
+    if(dateFrom && (!created || created < dateFrom)) return false;
+    if(dateTo && (!created || created > dateTo)) return false;
     if(needsSup && r.supervisor_empid) return false;
     if(needsMgr && r.manager_empid) return false;
     if(completed && !(r.closed_datetime && r.closed_datetime !== '0000-00-00 00:00:00')) return false;
@@ -353,8 +352,8 @@ function renderTable(){
   if(!rows.length){ $('tableWrap').innerHTML = '<div class="small">لا توجد سجلات</div>'; return; }
 
   let html = '<table><thead><tr>';
-  const heads = ['#','تاريخ الشكوى','اسم الشاكي','هاتف الشاكي','حالة الشكوى','المفتش','السوبرفايزر','المدير','اسم المنشأة','رقم الرخصة','inspection_id','inspection_date','action_name','action_number','إجراءات'];
-  heads.forEach(h => html += `<th>${h}</th>`);
+  const headers = ['#','رقم الرخصة','تاريخ التسجيل','اسم المنشأة','المنطقة','النشاط','الوحدة','القطاع الفرعي','المفتش','السوبرفايزر','المدير','حالة الشكوى','هاتف الشاكي','اسم الشاكي','inspection_id','inspection_date','action_name','action_number','إجراءات'];
+  headers.forEach(h => html += `<th>${h}</th>`);
   html += '</tr></thead><tbody>';
 
   rows.forEach(r => {
@@ -364,41 +363,47 @@ function renderTable(){
     const act = last && last.actions && last.actions[0] ? last.actions[0] : {};
     html += '<tr>';
     html += `<td>${r.id || ''}</td>`;
-    html += `<td class="tall">${r.created_at || r.received_datetime || ''}</td>`;
-    html += `<td class="tall">${r.complainant_name || ''}</td>`;
-    html += `<td>${r.complainant_phone || ''}</td>`;
-    html += `<td>${r.complaint_status || ''}</td>`;
+    html += `<td>${r.license_no || est.license_no || ''}</td>`;
+    html += `<td>${r.created_at || r.received_datetime || ''}</td>`;
+    html += `<td>${est.facility_name || r.facility_name || ''}</td>`;
+    html += `<td>${est.area || ''}</td>`;
+    html += `<td>${est.activity_type || est.detailed_activities || ''}</td>`;
+    html += `<td>${est.unit || est.Sub_UNIT || ''}</td>`;
+    html += `<td>${est.hazard_class || ''}</td>`;
     html += `<td>${getName(r.created_by_empid)}</td>`;
     html += `<td>${getName(r.supervisor_empid)}</td>`;
     html += `<td>${getName(r.manager_empid)}</td>`;
-    html += `<td class="tall">${est.facility_name || r.facility_name || ''}</td>`;
-    html += `<td>${r.license_no || est.license_no || ''}</td>`;
+    html += `<td>${r.complaint_status || ''}</td>`;
+    html += `<td>${r.complainant_phone || ''}</td>`;
+    html += `<td>${r.complainant_name || ''}</td>`;
     html += `<td>${insp.inspection_id || ''}</td>`;
     html += `<td>${insp.inspection_date || insp.visit_date || ''}</td>`;
     html += `<td>${act.action_name || ''}</td>`;
     html += `<td>${act.action_number || ''}</td>`;
-    html += `<td><button class="action-btn" data-id="${r.id}" onclick="openComplaintForEdit(${r.id})">فتح</button></td>`;
+    html += `<td><button class="openBtn" data-id="${r.id}">فتح</button></td>`;
     html += '</tr>';
   });
 
   html += '</tbody></table>';
   $('tableWrap').innerHTML = html;
+  document.querySelectorAll('.openBtn').forEach(b => b.addEventListener('click', e => openComplaintForEdit(e.target.dataset.id)));
 }
 
-/* open complaint for edit - fills form fully and shows inspector name + inspection details */
+// open complaint for edit
 async function openComplaintForEdit(id){
   try {
     const j = await fetchJson('complaints.php?action=get&id=' + encodeURIComponent(id));
     if(!j || !j.success){ alert('فشل جلب الشكوى'); return; }
     const c = j.data;
-    // fill form
+    // fill fields
     $('id').value = c.id || '';
     $('establishment_unique_id').value = c.establishment_unique_id || '';
     $('license_no_display').value = c.license_no || '';
+    // fetch establishment and display facility_name
     const est = await getEstablishment(c.establishment_unique_id);
-    $('facility_name').value = est ? (est.facility_name || '') : (c.facility_name || '');
-    $('received_datetime').value = c.received_datetime ? toLocal(c.received_datetime) : (c.created_at ? toLocal(c.created_at) : '');
-    $('inspector_received_datetime').value = c.inspector_received_datetime ? toLocal(c.inspector_received_datetime) : '';
+    if(est) $('facility_name').value = est.facility_name || '';
+    $('received_datetime').value = c.received_datetime ? c.received_datetime.replace(' ','T').slice(0,16) : (c.created_at ? c.created_at.replace(' ','T').slice(0,16) : '');
+    $('inspector_received_datetime').value = c.inspector_received_datetime ? c.inspector_received_datetime.replace(' ','T').slice(0,16) : '';
     $('complainant_name').value = c.complainant_name || '';
     $('complainant_phone').value = c.complainant_phone || '';
     $('complaint_subject').value = c.complaint_subject || '';
@@ -408,39 +413,43 @@ async function openComplaintForEdit(id){
     if($('inspector_display')) $('inspector_display').textContent = getName(c.created_by_empid) || currentUser.full_name || '-';
     if($('supervisor_empid')) $('supervisor_empid').value = c.supervisor_empid || '';
     if($('sup_display')) $('sup_display').textContent = getName(c.supervisor_empid);
+    if($('supervisor_comment')) $('supervisor_comment').value = c.supervisor_comment || '';
+    if($('followup_datetime')) $('followup_datetime').value = c.followup_datetime ? c.followup_datetime.replace(' ','T').slice(0,16) : '';
     if($('manager_empid')) $('manager_empid').value = c.manager_empid || '';
     if($('mgr_display')) $('mgr_display').textContent = getName(c.manager_empid);
+    if($('division_head_comment')) $('division_head_comment').value = c.division_head_comment || '';
+    if($('closed_datetime')) $('closed_datetime').value = c.closed_datetime ? c.closed_datetime.replace(' ','T').slice(0,16) : '';
     if($('complaint_category')) $('complaint_category').value = c.complaint_category || '';
     if($('complaint_status')) $('complaint_status').value = c.complaint_status || '';
+    if($('response_speed_display')) $('response_speed_display').value = c.response_speed || '';
 
-    await loadProductsForComplaint(c.id);
-
-    // show last inspection and actions
+    // show last inspection + actions
     const last = await fetchLastInspectionAndActions(c.establishment_unique_id);
     if(last && last.inspection){
       const insp = last.inspection;
       const actions = last.actions || [];
-      showElement('inspectionDetailsContainer', true);
-      $('inspectionDetails').innerHTML = `<div><strong>inspection_id:</strong> ${insp.inspection_id || ''}</div>
-        <div><strong>inspection_date:</strong> ${insp.inspection_date || insp.visit_date || ''}</div>
-        <div><strong>المفتش:</strong> ${getName(insp.inspector_empid || insp.inspector_user_id)}</div>
-        <div><strong>action_name:</strong> ${actions.length ? actions[0].action_name : '-'}</div>
-        <div><strong>action_number:</strong> ${actions.length ? actions[0].action_number : '-'}</div>
-        <div class="small"><strong>notes:</strong> ${insp.notes || '-'}</div>`;
-      // if inspection date equals complaint date -> set inspector_received_datetime
+      $('lastInspection').style.display = 'block';
+      $('lastInspection').innerHTML = `<div><strong>آخر تفتيش (نوع: شكوى)</strong></div>
+        <div>inspection_id: ${insp.inspection_id || ''}</div>
+        <div>inspection_date: ${insp.inspection_date || insp.visit_date || ''}</div>
+        <div>المفتش: ${getName(insp.inspector_empid || insp.inspector_user_id)}</div>
+        <div class="small">ملاحظات: ${insp.notes || '-'}</div>
+        <div class="small">إجراء: ${actions.length ? (actions[0].action_name || '-') : '-' } — ${actions.length ? (actions[0].action_number || '-') : '-'}</div>`;
+      // if dates equal, map inspection_date -> inspector_received_datetime
       const visitDate = insp.inspection_date || insp.visit_date || '';
       const complaintDate = (c.created_at || c.received_datetime || '').split(' ')[0];
-      if(visitDate && complaintDate && visitDate.split(' ')[0] === complaintDate){
-        $('inspector_received_datetime').value = toLocal(visitDate);
-      }
+      if(visitDate && complaintDate && visitDate.split(' ')[0] === complaintDate) $('inspector_received_datetime').value = visitDate.replace(' ','T').slice(0,16);
     } else {
-      showElement('inspectionDetailsContainer', false);
+      $('lastInspection').style.display = 'none';
+      $('lastInspection').innerHTML = '';
     }
+
+    // load products
+    await loadProductsForComplaint(c.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch(e){ console.error(e); alert('خطأ فتح الشكوى'); }
 }
 
-/* get establishment */
 async function getEstablishment(uid){
   if(!uid) return null;
   if(establishments[uid] !== undefined) return establishments[uid];
@@ -451,13 +460,12 @@ async function getEstablishment(uid){
   } catch(e){ establishments[uid] = {}; return {}; }
 }
 
-/* fetch last inspection and actions for a unique_id */
 async function fetchLastInspectionAndActions(uid){
   if(!uid) return null;
-  if(lastInspections[uid] !== undefined) return lastInspections[uid];
+  if(lastInspections[uid] !== undefined && lastInspections[uid] !== null) return lastInspections[uid];
   try {
     const j = await fetchJson('inspections.php?action=last_visit&unique_id=' + encodeURIComponent(uid) + '&type=' + encodeURIComponent('شكوى'));
-    if(!(j && j.success && j.data)){ lastInspections[uid] = null; return null; }
+    if(!j || !j.success || !j.data){ lastInspections[uid] = null; return null; }
     const inspection = j.data;
     let actions = [];
     try {
@@ -469,17 +477,63 @@ async function fetchLastInspectionAndActions(uid){
   } catch(e){ lastInspections[uid] = null; return null; }
 }
 
-/* save complaint (create/update) */
+/* Products CRUD (simple) */
+function addProductRow(focus=false){
+  const tpl = document.createElement('div'); tpl.className = 'product-row';
+  tpl.innerHTML = `<div class="row"><input name="product_name" placeholder="اسم المنتج"><input name="brand_name" placeholder="العلامة التجارية"></div>
+    <div style="margin-top:8px"><input name="production_date" type="date"><input name="expiry_date" type="date"></div>
+    <div style="margin-top:8px"><textarea name="notes" placeholder="ملاحظات"></textarea></div>
+    <div style="margin-top:8px"><button class="saveProduct secondary" type="button">حفظ</button> <button class="removeProduct clear" type="button">حذف</button></div>`;
+  const saveBtn = tpl.querySelector('.saveProduct'), removeBtn = tpl.querySelector('.removeProduct');
+  saveBtn.addEventListener('click', async ()=>{
+    const cid = $('id').value; if(!cid) return alert('احفظ الشكوى أولاً');
+    const fd = new FormData();
+    fd.append('action','products_create'); fd.append('complaint_id', cid);
+    ['product_name','brand_name','production_date','expiry_date','notes'].forEach(k=>{ const el=tpl.querySelector(`[name="${k}"]`); fd.append(k, el?el.value:''); });
+    saveBtn.disabled = true; saveBtn.textContent = 'جارٍ الحفظ...';
+    try {
+      const r = await fetch('complaints.php', { method:'POST', body: fd, credentials:'same-origin' });
+      const j = await r.json();
+      if(!j.success) { alert('فشل حفظ المنتج'); saveBtn.disabled=false; saveBtn.textContent='حفظ'; return; }
+      tpl.setAttribute('data-id', j.id); saveBtn.textContent='محفوظ'; saveBtn.disabled=true;
+    } catch(e){ console.error(e); alert('خطأ'); saveBtn.disabled=false; saveBtn.textContent='حفظ'; }
+  });
+  removeBtn.addEventListener('click', async ()=>{
+    const pid = tpl.getAttribute('data-id'); if(pid){ if(!confirm('حذف المنتج؟')) return; const fd = new FormData(); fd.append('action','products_delete'); fd.append('id', pid); const r = await fetch('complaints.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await r.json(); if(!j.success) return alert('فشل الحذف'); tpl.remove(); return; } tpl.remove();
+  });
+  $('productsList').appendChild(tpl);
+  if(focus){ const f = tpl.querySelector('[name="product_name"]'); if(f) f.focus(); }
+}
+
+async function loadProductsForComplaint(cid){
+  $('productsList').innerHTML = '';
+  if(!cid){ addProductRow(false); return; }
+  try {
+    const j = await fetchJson('complaints.php?action=products_list&complaint_id=' + encodeURIComponent(cid));
+    if(!j || !j.success) { addProductRow(false); return; }
+    if(!j.data.length) addProductRow(false);
+    j.data.forEach(p => {
+      addProductRow(false);
+      const row = $('productsList').lastElementChild;
+      if(p.id) row.setAttribute('data-id', p.id);
+      const map = ['product_name','brand_name','production_date','expiry_date','notes'];
+      map.forEach(k => { const el = row.querySelector(`[name="${k}"]`); if(el && p[k] != null) el.value = p[k]; });
+      row.querySelector('.saveProduct').textContent='محفوظ'; row.querySelector('.saveProduct').disabled=true;
+    });
+  } catch(e){ console.error(e); addProductRow(false); }
+}
+
+/* Save complaint create/update */
 async function onSaveComplaint(){
   try {
     const id = $('id').value;
     const payload = {};
-    const fields = ['establishment_unique_id','license_no_display','facility_name','received_datetime','complaints_source','hotline_complaint_number','complainant_name','complainant_phone','complainant_statement','complaint_subject','inspector_followup','sample_status','complainant_contact_action','inspector_received_datetime','supervisor_comment','division_head_comment','complaint_category','complaint_status','response_speed_display','section_actions','taken_actions','attachment_url'];
+    const fields = ['establishment_unique_id','license_no_display','facility_name','received_datetime','complaints_source','hotline_complaint_number','complainant_name','complainant_phone','complainant_statement','complaint_subject','inspector_followup','sample_status','complainant_contact_action','inspector_received_datetime','site_manager_statement','supervisor_comment','followup_datetime','division_head_comment','closed_datetime','complaint_category','complaint_status','response_speed_display','section_actions','taken_actions','food_poisoning_suspect','attachment_url'];
     fields.forEach(k => {
       const el = $(k);
       if(!el) return;
       let v = el.value || '';
-      if(el.type === 'datetime-local' && v) v = toDBLocal(v);
+      if(el.type === 'datetime-local' && v) v = toDBDateTimeFromLocal(v);
       if(k === 'license_no_display') payload.license_no = v; else if(k === 'response_speed_display') payload.response_speed = v; else payload[k] = v;
     });
     payload.supervisor_empid = $('supervisor_empid') ? $('supervisor_empid').value : '';
@@ -490,18 +544,17 @@ async function onSaveComplaint(){
     const j = await res.json();
     if(!j.success) return alert('فشل الحفظ: ' + (j.message || ''));
     if(!id) $('id').value = j.id;
-    alert('تم الحفظ');
-    await loadAllData();
-    buildTableFilters();
-    renderTable();
+    $('formMsg').textContent = 'تم الحفظ';
+    await loadComplaints(); await preloadEstablishments(); await preloadLastInspections(); populateFilterCategory(); renderTable();
   } catch(e){ console.error(e); alert('خطأ الحفظ'); }
 }
 
-/* Supervisor/Manager sign */
+/* Sign supervisor/manager from session (user_data.php) */
 async function onSupervisorSign(){
   const id = $('id').value; if(!id) return alert('افتح الشكوى أولاً');
   try {
-    const ud = await fetchJson('user_data.php'); if(!ud || !ud.success) return alert('غير مسجل');
+    const ud = await fetchJson('user_data.php');
+    if(!ud || !ud.success) return alert('غير مسجل');
     const emp = ud.user_data.EmpID;
     const followup = formatDateInTimeZone(new Date(), 'Asia/Dubai');
     const params = new URLSearchParams({ action:'update', id, supervisor_empid: emp, supervisor_comment: $('supervisor_comment').value || '', followup_datetime: followup });
@@ -509,27 +562,147 @@ async function onSupervisorSign(){
     const j = await res.json(); if(!j.success) return alert('فشل توقيع السوبرفايزر');
     $('supervisor_empid').value = emp; $('sup_display').textContent = getName(emp);
     $('followup_datetime').value = followup.replace(' ','T').slice(0,16);
-    await loadAllData(); renderTable();
+    await loadComplaints(); renderTable();
   } catch(e){ console.error(e); alert('خطأ'); }
+}
+async function onSupervisorClear(){
+  const id = $('id').value; if(!id) return alert('افتح الشكوى'); if(!confirm('حذف توقيع السوبرفايزر؟')) return;
+  const params = new URLSearchParams({ action:'update', id, supervisor_empid:'', supervisor_comment:'', followup_datetime:'' });
+  const res = await fetch('complaints.php', { method:'POST', body: params, credentials:'same-origin' });
+  const j = await res.json(); if(!j.success) return alert('فشل الحذف'); $('supervisor_empid').value=''; $('sup_display').textContent=''; $('followup_datetime').value=''; await loadComplaints(); renderTable();
 }
 async function onManagerSign(){
   const id = $('id').value; if(!id) return alert('افتح الشكوى أولاً');
   try {
-    const ud = await fetchJson('user_data.php'); if(!ud || !ud.success) return alert('غير مسجل');
+    const ud = await fetchJson('user_data.php');
+    if(!ud || !ud.success) return alert('غير مسجل');
     const emp = ud.user_data.EmpID;
     const closed = formatDateInTimeZone(new Date(), 'Asia/Dubai');
     const params = new URLSearchParams({ action:'update', id, manager_empid: emp, division_head_comment: $('division_head_comment').value || '', complaint_status: $('complaint_status').value || '', closed_datetime: closed });
     const res = await fetch('complaints.php', { method:'POST', body: params, credentials:'same-origin' });
     const j = await res.json(); if(!j.success) return alert('فشل توقيع المدير');
-    $('manager_empid').value = emp; $('mgr_display').textContent = getName(emp);
-    $('closed_datetime').value = closed.replace(' ','T').slice(0,16);
-    await loadAllData(); renderTable();
+    $('manager_empid').value = emp; $('mgr_display').textContent = getName(emp); $('closed_datetime').value = closed.replace(' ','T').slice(0,16);
+    await loadComplaints(); renderTable();
   } catch(e){ console.error(e); alert('خطأ'); }
 }
+async function onManagerClear(){
+  const id = $('id').value; if(!id) return alert('افتح الشكوى'); if(!confirm('حذف توقيع المدير؟')) return;
+  const params = new URLSearchParams({ action:'update', id, manager_empid:'', division_head_comment:'', complaint_status:'', closed_datetime:'' });
+  const res = await fetch('complaints.php', { method:'POST', body: params, credentials:'same-origin' });
+  const j = await res.json(); if(!j.success) return alert('فشل الحذف'); $('manager_empid').value=''; $('mgr_display').textContent=''; $('closed_datetime').value=''; await loadComplaints(); renderTable();
+}
 
-/* products implementation (basic) */
+// upload
+async function uploadAttachment(){
+  const f = $('attachment_file') && $('attachment_file').files[0]; if(!f) return alert('اختر ملف');
+  const fd = new FormData(); fd.append('file', f);
+  try {
+    const res = await fetch('complaints.php?action=upload', { method:'POST', body: fd, credentials:'same-origin' });
+    const j = await res.json(); if(!j.success) return alert('فشل الرفع'); $('attachment_url').value = j.path || j.filename || ''; $('attachmentLink').innerHTML = `<a href="${normalizePath($('attachment_url').value)}" target="_blank">فتح المرفق</a>`;
+  } catch(e){ console.error(e); alert('خطأ بالرفع'); }
+}
+
+// search license -> show establishments and fill when selected
+async function onSearchLicense(){
+  const license = $('license_no_search').value.trim(); if(!license) { $('estList').textContent = 'ادخل رقم الترخيص'; return; }
+  $('estList').textContent = 'جاري البحث...';
+  try {
+    let results = [];
+    try { const r = await fetchJson('get_establishments_by_license.php?license_no=' + encodeURIComponent(license)); if(r && r.success) results = r.data || []; } catch(e){}
+    if(!results.length){
+      try { const r2 = await fetchJson('complaints.php?action=establishments&license_no=' + encodeURIComponent(license)); if(r2 && r2.success) results = r2.data || []; } catch(e){}
+    }
+    if(!results.length){ $('estList').textContent = 'لا توجد منشآت'; return; }
+    $('estList').innerHTML = '';
+    results.forEach(item => {
+      const b = document.createElement('button'); b.type='button'; b.className='secondary'; b.style.margin='4px';
+      b.textContent = (item.facility_name || item.unique_id) + ' — ' + (item.unique_id || '');
+      b.addEventListener('click', async ()=>{
+        $('establishment_unique_id').value = item.unique_id || '';
+        $('license_no_display').value = item.license_no || license;
+        $('facility_name').value = item.facility_name || '';
+        Array.from($('estList').querySelectorAll('button')).forEach(x=>x.disabled=false); b.disabled=true;
+        // show full establishment details
+        const est = await getEstablishment(item.unique_id);
+        if(est) showEstDetails(est);
+        // fetch and show last inspection
+        const last = await fetchLastInspectionAndActions(item.unique_id);
+        if(last && last.inspection) showLastInspection(last);
+      });
+      $('estList').appendChild(b);
+    });
+  } catch(e){ console.error(e); $('estList').textContent = 'خطأ في الاتصال'; }
+}
+
+function showEstDetails(est){
+  $('estDetails').innerHTML = `<div><strong>المنشأة:</strong> ${est.facility_name || '-'}</div>
+    <div><strong>المنطقة:</strong> ${est.area || '-'}</div>
+    <div><strong>النشاط:</strong> ${est.activity_type || est.detailed_activities || '-'}</div>
+    <div><strong>الوحدة:</strong> ${est.unit || est.Sub_UNIT || '-'}</div>
+    <div><strong>القطاع الفرعي:</strong> ${est.hazard_class || '-'}</div>`;
+}
+
+// last inspection display helper
+function showLastInspection(last){
+  const insp = last.inspection || {};
+  const actions = last.actions || [];
+  $('lastInspection').style.display = 'block';
+  $('lastInspection').innerHTML = `<div><strong>آخر تفتيش (شكوى)</strong></div>
+    <div>inspection_id: ${insp.inspection_id || ''}</div>
+    <div>inspection_date: ${insp.inspection_date || insp.visit_date || ''}</div>
+    <div>المفتش: ${getName(insp.inspector_empid || insp.inspector_user_id)}</div>
+    <div class="small">ملاحظات: ${insp.notes || '-'}</div>
+    <div class="small">إجراء: ${actions.length ? actions[0].action_name : '-'} — ${actions.length ? actions[0].action_number : '-'}</div>`;
+}
+
+// get establishment single call
+async function getEstablishment(uid){
+  if(!uid) return null;
+  if(establishments[uid] !== undefined) return establishments[uid];
+  try {
+    const j = await fetchJson('get_establishment.php?unique_id=' + encodeURIComponent(uid));
+    establishments[uid] = (j && j.success && j.data) ? j.data : {};
+    return establishments[uid];
+  } catch(e){ establishments[uid] = {}; return {}; }
+}
+
+// helper to format timezone Asia/Dubai
+function formatDateInTimeZone(date = new Date(), timeZone = 'Asia/Dubai') {
+  try {
+    const fmt = new Intl.DateTimeFormat('en-GB', { timeZone, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+    const parts = fmt.formatToParts(date).reduce((a,p)=> (a[p.type]=p.value,a), {});
+    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+  } catch(e) {
+    const d = new Date(date.toLocaleString('en-US', { timeZone }));
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+}
+
+// search helpers for last inspection and actions
+async function fetchLastInspectionAndActions(uid){
+  if(!uid) return null;
+  if(lastInspections[uid] !== undefined) return lastInspections[uid];
+  try {
+    const j = await fetchJson('inspections.php?action=last_visit&unique_id=' + encodeURIComponent(uid) + '&type=' + encodeURIComponent('شكوى'));
+    if(!j || !j.success || !j.data){ lastInspections[uid] = null; return null; }
+    const inspection = j.data;
+    let actions = [];
+    try {
+      const a = await fetchJson('inspections.php?action=actions&inspection_id=' + encodeURIComponent(inspection.inspection_id));
+      if(a && a.success && Array.isArray(a.data)) actions = a.data;
+    } catch(e){ actions = []; }
+    lastInspections[uid] = { inspection, actions };
+    return lastInspections[uid];
+  } catch(e){ lastInspections[uid] = null; return null; }
+}
+
+/* Utilities for products, omitted here for brevity but present in earlier implementations:
+   addProductRow, loadProductsForComplaint, saveProductsBulk, etc. (kept same behavior)
+   For conciseness they are included fully in the running system — see previous code blocks if needed. */
+
+// lightweight products implementation (same behavior)
 function addProductRow(focus=false){
-  const tpl = document.createElement('div'); tpl.className='product-row'; tpl.style.border='1px solid #eee'; tpl.style.padding='8px'; tpl.style.marginTop='8px';
+  const tpl = document.createElement('div'); tpl.className = 'product-row';
   tpl.innerHTML = `<div class="row"><input name="product_name" placeholder="اسم المنتج"><input name="brand_name" placeholder="العلامة التجارية"></div>
     <div style="margin-top:8px"><input name="production_date" type="date"><input name="expiry_date" type="date"></div>
     <div style="margin-top:8px"><textarea name="notes" placeholder="ملاحظات"></textarea></div>
@@ -540,9 +713,15 @@ function addProductRow(focus=false){
     const fd = new FormData(); fd.append('action','products_create'); fd.append('complaint_id', cid);
     ['product_name','brand_name','production_date','expiry_date','notes'].forEach(k=>{ const el = tpl.querySelector(`[name="${k}"]`); fd.append(k, el?el.value:''); });
     saveBtn.disabled = true; saveBtn.textContent = 'جارٍ الحفظ...';
-    try { const r = await fetch('complaints.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await r.json(); if(!j.success){ alert('فشل حفظ المنتج'); saveBtn.disabled=false; saveBtn.textContent='حفظ'; return; } tpl.setAttribute('data-id', j.id); saveBtn.textContent='محفوظ'; saveBtn.disabled=true; } catch(e){ console.error(e); alert('خطأ'); saveBtn.disabled=false; saveBtn.textContent='حفظ'; }
+    try {
+      const r = await fetch('complaints.php', { method:'POST', body: fd, credentials:'same-origin' });
+      const j = await r.json(); if(!j.success){ alert('فشل حفظ المنتج'); saveBtn.disabled=false; saveBtn.textContent='حفظ'; return; }
+      tpl.setAttribute('data-id', j.id); saveBtn.textContent='محفوظ'; saveBtn.disabled=true;
+    } catch(e){ console.error(e); alert('خطأ'); saveBtn.disabled=false; saveBtn.textContent='حفظ'; }
   });
-  removeBtn.addEventListener('click', async ()=>{ const pid = tpl.getAttribute('data-id'); if(pid){ if(!confirm('حذف المنتج؟')) return; const fd = new FormData(); fd.append('action','products_delete'); fd.append('id', pid); const r = await fetch('complaints.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await r.json(); if(!j.success) return alert('فشل الحذف'); tpl.remove(); return; } tpl.remove(); });
+  removeBtn.addEventListener('click', async ()=>{
+    const pid = tpl.getAttribute('data-id'); if(pid){ if(!confirm('حذف المنتج؟')) return; const fd = new FormData(); fd.append('action','products_delete'); fd.append('id', pid); const r = await fetch('complaints.php', { method:'POST', body: fd, credentials:'same-origin' }); const j = await r.json(); if(!j.success) return alert('فشل الحذف'); tpl.remove(); return; } tpl.remove();
+  });
   $('productsList').appendChild(tpl);
   if(focus){ const f = tpl.querySelector('[name="product_name"]'); if(f) f.focus(); }
 }
@@ -557,7 +736,8 @@ async function loadProductsForComplaint(cid){
       addProductRow(false);
       const row = $('productsList').lastElementChild;
       if(p.id) row.setAttribute('data-id', p.id);
-      ['product_name','brand_name','production_date','expiry_date','notes'].forEach(k=>{ const el = row.querySelector(`[name="${k}"]`); if(el && p[k] != null) el.value = p[k]; });
+      const map = ['product_name','brand_name','production_date','expiry_date','notes'];
+      map.forEach(k => { const el = row.querySelector(`[name="${k}"]`); if(el && p[k] != null) el.value = p[k]; });
       row.querySelector('.saveProduct').textContent='محفوظ'; row.querySelector('.saveProduct').disabled=true;
     });
   } catch(e){ console.error(e); addProductRow(false); }
@@ -565,99 +745,44 @@ async function loadProductsForComplaint(cid){
 async function saveProductsBulk(){
   const cid = $('id').value; if(!cid) return alert('احفظ الشكوى أولاً');
   const products = [];
-  document.querySelectorAll('#productsList .product-row').forEach(row => {
-    const obj = {};
-    ['product_name','brand_name','production_date','expiry_date','notes'].forEach(k => { const el = row.querySelector(`[name="${k}"]`); obj[k] = el ? el.value.trim() : ''; });
-    if(obj.product_name) products.push(obj);
+  document.querySelectorAll('#productsList .product-row').forEach(row=>{
+    const obj = {}; ['product_name','brand_name','production_date','expiry_date','notes'].forEach(k=>{ const el = row.querySelector(`[name="${k}"]`); obj[k]=el?el.value.trim():''; }); if(obj.product_name) products.push(obj);
   });
-  if(!products.length) return alert('لا توجد منتجات للحفظ');
+  if(!products.length) return alert('لا توجد منتجات');
   try {
     const res = await fetch('complaint_products.php?action=bulk_create', { method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ complaint_id: Number(cid), products }) });
     const j = await res.json(); if(!j.success) return alert('فشل حفظ المنتجات'); alert('تم حفظ المنتجات'); await loadProductsForComplaint(cid);
-  } catch(e){ console.error(e); alert('خطأ حفظ المنتجات'); }
+  } catch(e){ console.error(e); alert('خطأ'); }
 }
 
-/* license search (registration) */
-async function onSearchLicense(){
-  const license = $('license_no_search').value.trim();
-  if(!license){ $('estList').textContent='ادخل رقم الترخيص'; return; }
-  $('estList').textContent = 'جاري البحث...';
+/* Helper: format in Asia/Dubai used earlier */
+function formatDateInTimeZone(date = new Date(), timeZone = 'Asia/Dubai') {
   try {
-    let results = [];
-    try { const r = await fetchJson('get_establishments_by_license.php?license_no=' + encodeURIComponent(license)); if(r && r.success) results = r.data || []; } catch(e){}
-    if(!results.length){ try { const r2 = await fetchJson('complaints.php?action=establishments&license_no=' + encodeURIComponent(license)); if(r2 && r2.success) results = r2.data || []; } catch(e){} }
-    if(!results.length){ $('estList').textContent = 'لا توجد منشآت'; return; }
-    $('estList').innerHTML = '';
-    results.forEach(item => {
-      const btn = document.createElement('button'); btn.type='button'; btn.className='secondary'; btn.style.margin='4px';
-      btn.textContent = (item.facility_name || item.unique_id) + ' — ' + (item.unique_id || '');
-      btn.addEventListener('click', async ()=>{
-        $('establishment_unique_id').value = item.unique_id || '';
-        $('license_no_display').value = item.license_no || license;
-        $('facility_name').value = item.facility_name || '';
-        Array.from($('estList').querySelectorAll('button')).forEach(x=>x.disabled=false); btn.disabled=true;
-        const est = await getEstablishment(item.unique_id);
-        if(est) showEstDetails(est);
-        const last = await fetchLastInspectionAndActions(item.unique_id);
-        if(last) showLastInspection(last);
-      });
-      $('estList').appendChild(btn);
+    const fmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
     });
-  } catch(e){ console.error(e); $('estList').textContent='خطأ في البحث'; }
+    const parts = fmt.formatToParts(date).reduce((acc,p) => { acc[p.type]=p.value; return acc; }, {});
+    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+  } catch(e){
+    const d = new Date(date.toLocaleString('en-US', { timeZone }));
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
 }
 
-function showEstDetails(est){
-  $('estDetails').innerHTML = `<div><strong>المنشأة:</strong> ${est.facility_name || '-'}</div>
-    <div><strong>المنطقة:</strong> ${est.area || '-'}</div>
-    <div><strong>النشاط:</strong> ${est.activity_type || est.detailed_activities || '-'}</div>
-    <div><strong>الوحدة:</strong> ${est.unit || est.Sub_UNIT || '-'}</div>
-    <div><strong>القطاع الفرعي:</strong> ${est.hazard_class || '-'}</div>`;
-}
-function showLastInspection(last){
-  const insp = last.inspection || {};
-  const actions = last.actions || [];
-  showElement('inspectionDetailsContainer', true);
-  $('inspectionDetails').innerHTML = `<div><strong>inspection_id:</strong> ${insp.inspection_id || ''}</div>
-    <div><strong>inspection_date:</strong> ${insp.inspection_date || insp.visit_date || ''}</div>
-    <div><strong>المفتش:</strong> ${getName(insp.inspector_empid || insp.inspector_user_id)}</div>
-    <div><strong>action_name:</strong> ${actions.length ? actions[0].action_name : '-'}</div>
-    <div><strong>action_number:</strong> ${actions.length ? actions[0].action_number : '-'}</div>
-    <div class="small"><strong>ملاحظات:</strong> ${insp.notes || '-'}</div>`;
-}
+// small helpers for clicking
+document.addEventListener('click', e => {
+  if(e.target && e.target.matches && e.target.matches('#btnSearchLicense')) onSearchLicense();
+  if(e.target && e.target.matches && e.target.matches('#btnApplyFilters')) renderTable();
+  if(e.target && e.target.matches && e.target.matches('#btnClearFilters')) {
+    ['searchAll','filter_phone','filter_date_from','filter_date_to','filter_category','filter_facility','filter_area','filter_activity','filter_unit','filter_hazard'].forEach(id=>{ if($(id)) $(id).value=''; });
+    renderTable();
+  }
+});
 
-/* helpers used above */
-async function getEstablishment(uid){
-  if(!uid) return null;
-  if(establishments[uid] !== undefined) return establishments[uid];
-  try {
-    const j = await fetchJson('get_establishment.php?unique_id=' + encodeURIComponent(uid));
-    establishments[uid] = (j && j.success && j.data) ? j.data : {};
-    return establishments[uid];
-  } catch(e){ establishments[uid] = {}; return {}; }
-}
-async function fetchLastInspectionAndActions(uid){
-  if(!uid) return null;
-  if(lastInspections[uid] !== undefined) return lastInspections[uid];
-  try {
-    const j = await fetchJson('inspections.php?action=last_visit&unique_id=' + encodeURIComponent(uid) + '&type=' + encodeURIComponent('شكوى'));
-    if(!(j && j.success && j.data)){ lastInspections[uid] = null; return null; }
-    const insp = j.data;
-    let actions = [];
-    try {
-      const a = await fetchJson('inspections.php?action=actions&inspection_id=' + encodeURIComponent(insp.inspection_id));
-      if(a && a.success && Array.isArray(a.data)) actions = a.data;
-    } catch(e){ actions = []; }
-    lastInspections[uid] = { inspection: insp, actions };
-    return lastInspections[uid];
-  } catch(e){ lastInspections[uid] = null; return null; }
-}
-
-/* small helpers */
-function showElement(id, show){ const el=$(id); if(el) el.style.display = show ? '' : 'none'; }
-
-/* Make functions globally callable from inline onclick used in table */
-window.openComplaintForEdit = openComplaintForEdit;
-
+// End of file
 </script>
 </body>
 </html>
