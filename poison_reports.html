@@ -2,164 +2,551 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>نموذج بلاغ التسمم</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نظام بلاغات التسمم</title>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <style>
-body { font-family: Arial; direction: rtl; }
-label { display: block; margin-top: 10px; }
-input, select, textarea { width: 100%; padding: 5px; margin-top: 2px; }
-button { margin-top: 10px; }
-.table-container { margin-top: 20px; }
-table { width: 100%; border-collapse: collapse; }
-table, th, td { border: 1px solid #ccc; }
-th, td { padding: 5px; text-align: center; }
+:root{--accent:#2a5b2a;--muted:#666;--card:#fafafa}
+body{font-family:Arial,"Noto Naskh Arabic",sans-serif;direction:rtl;background:#fff;color:#222;padding:12px}
+.container{max-width:1400px;margin:0 auto}
+.header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.h1{color:var(--accent);margin:0}
+.card{background:var(--card);padding:12px;border-radius:8px;border:1px solid #eee;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.col{flex:1;min-width:160px}
+.col-2{flex:2;min-width:300px}
+label{display:block;font-weight:700;margin-top:6px;font-size:12px}
+input,select,textarea,button{font-family:inherit}
+input,select,textarea{width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;font-size:12px}
+textarea{min-height:60px}
+button{background:var(--accent);color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+button.secondary{background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.08)}
+button.clear{background:#fff;color:var(--accent);border:1px solid #ddd}
+button.danger{background:#d32f2f;color:#fff}
+.small{font-size:11px;color:var(--muted)}
+.table-wrap{overflow:auto;margin-top:12px;max-height:400px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{border:1px solid #ddd;padding:4px 6px;text-align:right;vertical-align:top}
+th{background:#f0f0f0;position:sticky;top:0;z-index:2;font-weight:700}
+tbody tr:hover{background:#f9f9f9}
+.section-title{background:#e8f5e9;padding:8px;border-radius:6px;margin:12px 0 8px 0;font-weight:700}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.filter-col{display:flex;flex-direction:column;gap:4px}
+.hidden{display:none}
+.attachment-item{display:inline-block;padding:4px 8px;background:#f0f0f0;border-radius:4px;margin:4px;font-size:11px}
+.attachment-item a{color:var(--accent)}
+.attachment-item .del-att{cursor:pointer;color:#d32f2f;margin-right:8px}
+@media(max-width:900px){.row{flex-direction:column}.filter-row{flex-direction:column}}
 </style>
 </head>
 <body>
+<div class="container">
+  <div class="header">
+    <h1 class="h1">نظام بلاغات التسمم</h1>
+    <div class="small">إدارة بلاغات التسمم الغذائي - الحفظ والتعديل والحذف والبحث</div>
+  </div>
 
-<h2>إضافة / تعديل بلاغ تسمم</h2>
+  <!-- Search Section -->
+  <div class="card">
+    <h4 style="margin:0 0 8px 0">البحث في البلاغات</h4>
+    <div class="row">
+      <div class="col"><label>بحث شامل</label><input id="search_q" placeholder="بحث بالاسم، المستشفى، الطعام..."></div>
+      <div class="col"><label>رقم المنشأة</label><input id="search_facility" placeholder="facility_unique_id"></div>
+      <div class="col"><label>من تاريخ</label><input id="search_date_from" type="date"></div>
+      <div class="col"><label>إلى تاريخ</label><input id="search_date_to" type="date"></div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <button id="btnSearch">بحث</button>
+        <button id="btnClearSearch" class="clear">مسح</button>
+        <button id="btnNewReport" class="secondary">بلاغ جديد</button>
+      </div>
+    </div>
+    <div class="table-wrap" id="reportsList"></div>
+  </div>
 
-<form id="poisonForm">
-    <input type="hidden" name="id" id="report_id">
-    <label>رقم الرخصة</label>
-    <input type="text" id="license_no" name="license_no">
+  <!-- Main Form -->
+  <div class="card" id="formCard">
+    <h4 style="margin:0 0 8px 0">نموذج بلاغ التسمم</h4>
+    <form id="poisonForm">
+      <input type="hidden" name="id" id="report_id">
 
-    <label>اختيار المنشأة</label>
-    <select id="facility_select">
-        <option value="">-- اختر منشأة --</option>
-    </select>
+      <!-- Establishment Section -->
+      <div class="section-title">بيانات المنشأة / المصدر</div>
+      <div class="row">
+        <div class="col">
+          <label>رقم الرخصة</label>
+          <input type="text" id="license_no" placeholder="أدخل رقم الرخصة للبحث">
+        </div>
+        <div class="col">
+          <label>اختيار المنشأة</label>
+          <select id="facility_select" name="establishment_unique_id">
+            <option value="">-- اختر منشأة --</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>نوع المصدر</label>
+          <select name="source_type" id="source_type">
+            <option value="establishment">منشأة</option>
+            <option value="home">منزلي</option>
+            <option value="outside_emirate">خارج الإمارة</option>
+            <option value="other">أخرى</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="altSourceFields">
+        <div class="row">
+          <div class="col"><label>اسم المصدر/المنشأة</label><input type="text" name="source_name" placeholder="اسم المنشأة أو المنزل"></div>
+          <div class="col"><label>المنطقة</label><input type="text" name="source_area" placeholder="المنطقة"></div>
+          <div class="col"><label>النشاط</label><input type="text" name="source_activity" placeholder="النشاط"></div>
+        </div>
+        <div class="row">
+          <div class="col-2"><label>وصف المصدر</label><textarea name="source_description" placeholder="وصف المصدر إن لزم"></textarea></div>
+        </div>
+      </div>
 
-    <label>أو بيانات بديلة إذا لم توجد منشأة</label>
-    <input type="text" name="source_name" placeholder="اسم المنشأة أو المنزل">
-    <input type="text" name="source_area" placeholder="المنطقة">
-    <input type="text" name="source_activity" placeholder="النشاط">
-    <textarea name="source_description" placeholder="وصف المصدر"></textarea>
+      <!-- Report Info Section -->
+      <div class="section-title">معلومات البلاغ</div>
+      <div class="row">
+        <div class="col">
+          <label>تاريخ ووقت البلاغ</label>
+          <input type="datetime-local" name="report_datetime" id="report_datetime">
+        </div>
+        <div class="col">
+          <label>تاريخ ووقت استلام المفتش</label>
+          <input type="datetime-local" name="inspector_received_datetime">
+        </div>
+        <div class="col">
+          <label>جهة البلاغ</label>
+          <select name="report_source" id="report_source">
+            <option value="">-- اختر --</option>
+            <option value="الخط الساخن">الخط الساخن</option>
+            <option value="القسم">القسم</option>
+            <option value="مستشفي">مستشفي</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>رقم النموذج</label>
+          <input type="text" name="form_number" placeholder="رقم النموذج">
+        </div>
+      </div>
 
-    <label>تاريخ ووقت البلاغ</label>
-    <input type="datetime-local" name="report_datetime">
+      <!-- Hospital Info -->
+      <div class="section-title">معلومات المستشفى</div>
+      <div class="row">
+        <div class="col"><label>اسم المستشفى</label><input type="text" name="hospital_name" placeholder="اسم المستشفى"></div>
+        <div class="col"><label>تاريخ ووقت الدخول</label><input type="datetime-local" name="admission_datetime"></div>
+        <div class="col"><label>مسؤول مكافحة العدوى</label><input type="text" name="infection_officer" placeholder="اسم المسؤول"></div>
+        <div class="col"><label>هاتف مسؤول العدوى</label><input type="text" name="infection_officer_phone" placeholder="رقم الهاتف"></div>
+      </div>
 
-    <label>جهة البلاغ</label>
-    <input type="text" name="report_source">
+      <!-- Food Source Section -->
+      <div class="section-title">مصدر الطعام</div>
+      <div class="row">
+        <div class="col">
+          <label>مصدر الطعام</label>
+          <select name="food_source" id="food_source">
+            <option value="">-- اختر --</option>
+            <option value="داخل الامارة">داخل الامارة</option>
+            <option value="خارج الامارة">خارج الامارة</option>
+            <option value="منزلي">منزلي</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>رقم منشأة الطعام</label>
+          <input type="text" name="facility_unique_id" id="facility_unique_id" placeholder="facility_unique_id">
+        </div>
+        <div class="col">
+          <label>تاريخ ووقت تناول الطعام</label>
+          <input type="datetime-local" name="eating_datetime">
+        </div>
+        <div class="col">
+          <label>هل تم تناول الطعام بالموقع؟</label>
+          <select name="consumed_on_site">
+            <option value="">-- اختر --</option>
+            <option value="نعم">نعم</option>
+            <option value="لا">لا</option>
+            <option value="غير معروف">غير معروف</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col"><label>نوع الطعام المشتبه فيه</label><input type="text" name="suspected_food" placeholder="نوع الطعام المشتبه فيه"></div>
+        <div class="col"><label>عدد المتناولين للطعام</label><input type="number" name="total_consumers" min="0"></div>
+        <div class="col"><label>عدد من ظهر عليهم أعراض</label><input type="number" name="total_symptomatic" min="0"></div>
+        <div class="col"><label>آخر مكافحة حشرات</label><input type="date" name="last_pest_control"></div>
+      </div>
 
-    <label>مسؤول مكافحة العدوى</label>
-    <input type="text" name="infection_officer">
-    <input type="text" name="infection_officer_phone" placeholder="رقم الهاتف">
+      <!-- Symptoms Section -->
+      <div class="section-title">الأعراض والتشخيص</div>
+      <div class="row">
+        <div class="col-2"><label>الأعراض</label><textarea name="symptoms" placeholder="الأعراض التي ظهرت على المصابين"></textarea></div>
+        <div class="col"><label>الفترة بين الطعام والأعراض</label><input type="text" name="time_between_food_and_symptoms" placeholder="مثال: 4 ساعات"></div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <label>التشخيص المبدئي</label>
+          <select name="initial_diagnosis" id="initial_diagnosis">
+            <option value="">-- اختر --</option>
+            <option value="يوجد اشتباه تسمم غذائى">يوجد اشتباه تسمم غذائى</option>
+            <option value="لا يوجد اشتباه تسمم غذائى">لا يوجد اشتباه تسمم غذائى</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>التشخيص النهائي</label>
+          <input type="text" name="final_diagnosis" placeholder="التشخيص النهائي">
+        </div>
+        <div class="col">
+          <label>النتيجة</label>
+          <select name="final_result" id="final_result">
+            <option value="">-- اختر --</option>
+            <option value="حالة فردية ولا تحتاج الى التحقيق">حالة فردية ولا تحتاج الى التحقيق</option>
+            <option value="انتشار مرض وتحتاج الى تحقيق من فريق التقصى">انتشار مرض وتحتاج الى تحقيق من فريق التقصى</option>
+          </select>
+        </div>
+      </div>
 
-    <label>المستشفى (إن وجد)</label>
-    <input type="text" name="hospital_name">
-    <input type="datetime-local" name="admission_datetime" placeholder="تاريخ ووقت الدخول">
+      <!-- Samples Section -->
+      <div class="section-title">العينات والنتائج</div>
+      <div class="row">
+        <div class="col"><label>العينات المسحوبة من المرضى</label><textarea name="patient_samples_taken" placeholder="العينات المسحوبة من المرضى"></textarea></div>
+        <div class="col"><label>نتائج عينات المرضى</label><textarea name="patient_samples_results" placeholder="نتائج العينات"></textarea></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>العينات المسحوبة من المنشأة</label><textarea name="establishment_samples_taken" placeholder="العينات المسحوبة من المنشأة"></textarea></div>
+        <div class="col"><label>نتائج عينات المنشأة</label><textarea name="establishment_samples_results" placeholder="نتائج العينات"></textarea></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>تاريخ إدخال العينات</label><input type="datetime-local" name="samples_entry_datetime"></div>
+        <div class="col"><label>تاريخ ظهور النتيجة</label><input type="datetime-local" name="samples_result_datetime"></div>
+      </div>
 
-    <label>مصدر الطعام</label>
-    <input type="text" name="food_source">
-    <input type="hidden" name="facility_unique_id" id="facility_unique_id">
+      <!-- Actions Section -->
+      <div class="section-title">الإجراءات المتخذة</div>
+      <div class="row">
+        <div class="col-2"><label>الإجراءات المتخذة في المنشأة</label><textarea name="establishment_actions" placeholder="الإجراءات المتخذة في المنشأة"></textarea></div>
+        <div class="col"><label>حجم الإنتاج في المنشأة</label><input type="text" name="production_volume" placeholder="حجم الإنتاج"></div>
+      </div>
 
-    <label>تاريخ ووقت تناول الطعام</label>
-    <input type="datetime-local" name="eating_datetime">
+      <!-- Meals 72h Summary -->
+      <div class="section-title">الوجبات خلال 72 ساعة (ملخص)</div>
+      <div class="row">
+        <div class="col-2"><label>ملخص الوجبات</label><textarea name="meals_72h_summary" placeholder="الوجبات التي تناولها المصاب قبل 72 ساعة"></textarea></div>
+      </div>
 
-    <label>هل تم تناول الطعام بالموقع؟</label>
-    <select name="consumed_on_site">
-        <option value="">-- اختر --</option>
-        <option value="نعم">نعم</option>
-        <option value="لا">لا</option>
-        <option value="غير معروف">غير معروف</option>
-    </select>
+      <!-- Team and Approvals -->
+      <div class="section-title">الفريق والاعتمادات</div>
+      <div class="row">
+        <div class="col"><label>سوبرفايزر</label><input type="text" name="supervisor" placeholder="اسم السوبرفايزر"></div>
+        <div class="col"><label>أعضاء فريق التقصي</label><textarea name="investigation_team_members" placeholder="أعضاء فريق التقصي"></textarea></div>
+      </div>
+      <div class="row">
+        <div class="col-2"><label>توصيات فريق التقصي</label><textarea name="investigation_recommendations" placeholder="التوصيات"></textarea></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>اعتماد رئيس الشعبة</label><input type="text" name="section_head_approval" placeholder="اعتماد رئيس الشعبة"></div>
+        <div class="col"><label>اعتماد رئيس القسم</label><input type="text" name="division_head_approval" placeholder="اعتماد رئيس القسم"></div>
+      </div>
 
-    <label>نوع الطعام المشتبه فيه</label>
-    <input type="text" name="suspected_food">
+      <!-- Dates -->
+      <div class="section-title">تواريخ المتابعة</div>
+      <div class="row">
+        <div class="col"><label>تاريخ المتابعة</label><input type="datetime-local" name="followup_datetime"></div>
+        <div class="col"><label>تاريخ الإغلاق</label><input type="datetime-local" name="closed_datetime"></div>
+      </div>
 
-    <label>عدد المتناولين للطعام</label>
-    <input type="number" name="total_consumers">
+      <!-- Notes -->
+      <div class="section-title">ملاحظات</div>
+      <div class="row">
+        <div class="col-2"><label>ملاحظات عامة</label><textarea name="notes" placeholder="ملاحظات عامة"></textarea></div>
+      </div>
 
-    <label>عدد الذين ظهر عليهم أعراض</label>
-    <input type="number" name="total_symptomatic">
+      <!-- Attachments -->
+      <div class="section-title">المرفقات</div>
+      <div class="row">
+        <div class="col">
+          <label>رفع مرفق</label>
+          <input type="file" id="attachment_file" multiple>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button type="button" id="btnUpload" class="secondary">رفع المرفق</button>
+        </div>
+      </div>
+      <div id="attachmentsList" class="small" style="margin-top:8px"></div>
 
-    <label>ملاحظات عامة</label>
-    <textarea name="notes"></textarea>
+      <!-- Action Buttons -->
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button type="submit" id="btnSave">حفظ البلاغ</button>
+        <button type="button" id="btnDelete" class="danger">حذف البلاغ</button>
+        <button type="button" id="btnReset" class="clear">مسح النموذج</button>
+        <span id="formMsg" class="small" style="margin-right:auto"></span>
+      </div>
+    </form>
+  </div>
 
-    <button type="submit">حفظ البلاغ</button>
-</form>
-
-<div class="table-container">
-<h3>المخالطين</h3>
-<button id="add_contact">إضافة مخالط</button>
-<table id="contacts_table">
-    <thead>
-        <tr>
+  <!-- Contacts Table -->
+  <div class="card">
+    <h4 style="margin:0 0 8px 0">المصابين/المخالطين</h4>
+    <div style="margin-bottom:8px">
+      <button id="add_contact" class="secondary">إضافة مصاب</button>
+    </div>
+    <div class="table-wrap">
+      <table id="contacts_table">
+        <thead>
+          <tr>
             <th>الاسم</th><th>العمر</th><th>الجنس</th><th>الهاتف</th><th>مصدر المعلومات</th><th>الأعراض</th><th>إجراءات</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-</div>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 
-<div class="table-container">
-<h3>الوجبات</h3>
-<button id="add_meal">إضافة وجبة</button>
-<table id="meals_table">
-    <thead>
-        <tr>
+  <!-- Meals Table -->
+  <div class="card">
+    <h4 style="margin:0 0 8px 0">الوجبات (تفصيل 72 ساعة)</h4>
+    <div style="margin-bottom:8px">
+      <button id="add_meal" class="secondary">إضافة وجبة</button>
+    </div>
+    <div class="table-wrap">
+      <table id="meals_table">
+        <thead>
+          <tr>
             <th>اليوم</th><th>نوع الوجبة</th><th>اسم الوجبة</th><th>التفاصيل</th><th>إجراءات</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <script>
 $(document).ready(function(){
+    var API_URL = 'poison_reports.php';
+    
+    // Helper Functions
+    function showMsg(msg, ok){
+        if(ok === undefined) ok = true;
+        $('#formMsg').text(msg).css('color', ok ? 'green' : 'red');
+    }
+    
+    function toLocalDateTime(v){
+        if(!v) return '';
+        return String(v).replace(' ','T').slice(0,16);
+    }
+    
+    function escapeHtml(s){
+        if(!s) return '';
+        return $('<div>').text(s).html();
+    }
 
-    // ================= جلب المنشآت عند إدخال رقم الرخصة =================
+    // Search License for Establishments
     $('#license_no').on('change', function(){
         var license = $(this).val().trim();
         $('#facility_select').empty().append('<option value="">-- اختر منشأة --</option>');
         $('#facility_unique_id').val('');
         if(license==='') return;
         $.getJSON('get_establishments_by_license.php', {license_no: license}, function(res){
-            if(res.success && res.data.length){
-                res.data.forEach(f => {
-                    $('#facility_select').append('<option value="'+f.unique_id+'">'+f.facility_name+'</option>');
+            if(res.success && res.data && res.data.length){
+                res.data.forEach(function(f){
+                    $('#facility_select').append('<option value="'+escapeHtml(f.unique_id)+'">'+escapeHtml(f.facility_name)+' - '+escapeHtml(f.unique_id)+'</option>');
                 });
             }
+        }).fail(function(){
+            console.log('Failed to fetch establishments');
         });
     });
 
-    // ================= اختيار المنشأة =================
+    // Select Establishment
     $('#facility_select').on('change', function(){
         var uid = $(this).val();
         $('#facility_unique_id').val(uid);
-        if(uid==='') return;
-        // يمكن هنا تحميل بيانات المنشأة إذا أحببت
     });
 
-    // ================= حفظ البلاغ =================
+    // Toggle Alternative Source Fields
+    $('#source_type').on('change', function(){
+        var val = $(this).val();
+        if(val === 'establishment'){
+            $('#altSourceFields').addClass('hidden');
+        } else {
+            $('#altSourceFields').removeClass('hidden');
+        }
+    });
+
+    // Save Report
     $('#poisonForm').on('submit', function(e){
         e.preventDefault();
         var formData = $(this).serializeArray();
-        $.post('poison_reports.php?action=save_report', formData, function(res){
+        var id = $('#report_id').val();
+        
+        $.post(API_URL + '?action=save_report', formData, function(res){
             if(res.status){
-                alert('تم حفظ البلاغ بنجاح');
+                showMsg('تم حفظ البلاغ بنجاح - ID: ' + res.data);
                 $('#report_id').val(res.data);
                 loadContacts(res.data);
                 loadMeals(res.data);
-            }else alert(res.message);
-        }, 'json');
+                loadAttachments(res.data);
+                searchReports();
+            } else {
+                showMsg(res.message || 'فشل الحفظ', false);
+            }
+        }, 'json').fail(function(){
+            showMsg('خطأ في الاتصال بالخادم', false);
+        });
     });
 
-    // ================= إدارة المخالطين =================
-    function loadContacts(report_id){
-        $.getJSON('poison_reports.php?action=list_contacts&poison_report_id='+report_id, function(res){
+    // Delete Report
+    $('#btnDelete').on('click', function(){
+        var id = $('#report_id').val();
+        if(!id){
+            showMsg('افتح بلاغ أولاً', false);
+            return;
+        }
+        if(!confirm('هل أنت متأكد من حذف هذا البلاغ؟')) return;
+        
+        $.post(API_URL + '?action=delete_report', {id: id}, function(res){
             if(res.status){
-                var tbody = $('#contacts_table tbody').empty();
-                res.data.forEach(c=>{
-                    var tr = `<tr data-id="${c.id}">
-                        <td>${c.contact_name}</td>
-                        <td>${c.contact_age}</td>
-                        <td>${c.contact_gender}</td>
-                        <td>${c.contact_phone}</td>
-                        <td>${c.contact_info_source}</td>
-                        <td>${c.symptoms}</td>
-                        <td><button class="del_contact">حذف</button></td>
-                    </tr>`;
+                showMsg('تم حذف البلاغ');
+                resetForm();
+                searchReports();
+            } else {
+                showMsg(res.message || 'فشل الحذف', false);
+            }
+        }, 'json').fail(function(){
+            showMsg('خطأ في الاتصال بالخادم', false);
+        });
+    });
+
+    // Reset Form
+    function resetForm(){
+        $('#poisonForm')[0].reset();
+        $('#report_id').val('');
+        $('#facility_select').empty().append('<option value="">-- اختر منشأة --</option>');
+        $('#contacts_table tbody').empty();
+        $('#meals_table tbody').empty();
+        $('#attachmentsList').empty();
+        showMsg('');
+    }
+    
+    $('#btnReset').on('click', resetForm);
+    $('#btnNewReport').on('click', resetForm);
+
+    // Search Reports
+    function searchReports(){
+        var params = {
+            action: 'search_reports',
+            q: $('#search_q').val() || '',
+            facility_unique_id: $('#search_facility').val() || '',
+            date_from: $('#search_date_from').val() || '',
+            date_to: $('#search_date_to').val() || ''
+        };
+        
+        $.getJSON(API_URL, params, function(res){
+            var html = '';
+            if(res.status && res.data && res.data.length){
+                html = '<table><thead><tr><th>#</th><th>التاريخ</th><th>المستشفى</th><th>مصدر الطعام</th><th>التشخيص</th><th>النتيجة</th><th>إجراءات</th></tr></thead><tbody>';
+                res.data.forEach(function(r, i){
+                    html += '<tr>';
+                    html += '<td>'+(i+1)+'</td>';
+                    html += '<td>'+escapeHtml(r.report_datetime || '')+'</td>';
+                    html += '<td>'+escapeHtml(r.hospital_name || '')+'</td>';
+                    html += '<td>'+escapeHtml(r.food_source || '')+'</td>';
+                    html += '<td>'+escapeHtml(r.initial_diagnosis || '')+'</td>';
+                    html += '<td>'+escapeHtml(r.final_result || '')+'</td>';
+                    html += '<td><button class="openReport secondary" data-id="'+r.id+'">فتح</button></td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+            } else {
+                html = '<div class="small">لا توجد نتائج</div>';
+            }
+            $('#reportsList').html(html);
+        }).fail(function(){
+            $('#reportsList').html('<div class="small" style="color:red">خطأ في البحث</div>');
+        });
+    }
+    
+    $('#btnSearch').on('click', searchReports);
+    $('#btnClearSearch').on('click', function(){
+        $('#search_q, #search_facility, #search_date_from, #search_date_to').val('');
+        searchReports();
+    });
+    
+    // Open Report
+    $(document).on('click', '.openReport', function(){
+        var id = $(this).data('id');
+        openReport(id);
+    });
+    
+    function openReport(id){
+        $.getJSON(API_URL, {action: 'get_report', id: id}, function(res){
+            if(res.status && res.data){
+                var r = res.data;
+                resetForm();
+                $('#report_id').val(r.id);
+                
+                // Fill all form fields
+                var fields = ['establishment_unique_id','source_type','source_name','source_area','source_activity','source_description',
+                    'report_datetime','inspector_received_datetime','report_source','infection_officer','infection_officer_phone',
+                    'hospital_name','admission_datetime','food_source','facility_unique_id','eating_datetime',
+                    'samples_entry_datetime','samples_result_datetime','followup_datetime','closed_datetime',
+                    'consumed_on_site','last_pest_control','suspected_food','total_consumers','total_symptomatic',
+                    'meals_72h_summary','patient_samples_taken','patient_samples_results','establishment_samples_taken',
+                    'establishment_samples_results','time_between_food_and_symptoms','symptoms','establishment_actions',
+                    'production_volume','initial_diagnosis','final_diagnosis','supervisor','final_result',
+                    'investigation_recommendations','investigation_team_members','section_head_approval','division_head_approval',
+                    'form_number','notes'];
+                
+                fields.forEach(function(f){
+                    var el = $('[name="'+f+'"]');
+                    if(el.length){
+                        var val = r[f] || '';
+                        if(el.attr('type') === 'datetime-local'){
+                            val = toLocalDateTime(val);
+                        }
+                        el.val(val);
+                    }
+                });
+                
+                // Handle establishment select
+                if(r.establishment_unique_id){
+                    $('#facility_select').append('<option value="'+escapeHtml(r.establishment_unique_id)+'" selected>'+escapeHtml(r.establishment_unique_id)+'</option>');
+                }
+                
+                // Toggle source fields
+                $('#source_type').trigger('change');
+                
+                // Load related data
+                loadContacts(r.id);
+                loadMeals(r.id);
+                loadAttachments(r.id);
+                
+                showMsg('تم تحميل البلاغ');
+                window.scrollTo({top: $('#formCard').offset().top - 20, behavior: 'smooth'});
+            } else {
+                showMsg('فشل تحميل البلاغ', false);
+            }
+        }).fail(function(){
+            showMsg('خطأ في الاتصال', false);
+        });
+    }
+
+    // Contacts Management
+    function loadContacts(report_id){
+        $.getJSON(API_URL + '?action=list_contacts&poison_report_id='+report_id, function(res){
+            var tbody = $('#contacts_table tbody').empty();
+            if(res.status && res.data){
+                res.data.forEach(function(c){
+                    var tr = '<tr data-id="'+c.id+'">';
+                    tr += '<td>'+escapeHtml(c.contact_name || '')+'</td>';
+                    tr += '<td>'+escapeHtml(c.contact_age || '')+'</td>';
+                    tr += '<td>'+escapeHtml(c.contact_gender || '')+'</td>';
+                    tr += '<td>'+escapeHtml(c.contact_phone || '')+'</td>';
+                    tr += '<td>'+escapeHtml(c.contact_info_source || '')+'</td>';
+                    tr += '<td>'+escapeHtml(c.symptoms || '')+'</td>';
+                    tr += '<td><button class="del_contact danger" style="font-size:10px">حذف</button></td>';
+                    tr += '</tr>';
                     tbody.append(tr);
                 });
             }
@@ -168,41 +555,64 @@ $(document).ready(function(){
 
     $('#add_contact').on('click', function(){
         var report_id = $('#report_id').val();
-        if(!report_id){ alert('احفظ البلاغ أولاً'); return; }
-        var name = prompt('اسم المخالط'); if(!name) return;
+        if(!report_id){
+            alert('احفظ البلاغ أولاً');
+            return;
+        }
+        
+        var name = prompt('اسم المصاب/المخالط');
+        if(!name) return;
         var age = prompt('العمر');
         var gender = prompt('الجنس (ذكر/أنثى/غير معروف)');
-        var phone = prompt('الهاتف');
+        var phone = prompt('رقم الهاتف');
         var info_source = prompt('مصدر المعلومات');
         var symptoms = prompt('الأعراض');
-        $.post('poison_reports.php?action=save_contact', {
-            poison_report_id: report_id, contact_name: name, contact_age: age,
-            contact_gender: gender, contact_phone: phone, contact_info_source: info_source, symptoms: symptoms
-        }, function(res){ if(res.status) loadContacts(report_id); else alert(res.message); }, 'json');
-    });
-
-    $('#contacts_table').on('click','.del_contact', function(){
-        if(!confirm('هل أنت متأكد من الحذف؟')) return;
-        var tr = $(this).closest('tr');
-        var id = tr.data('id');
-        $.post('poison_reports.php?action=delete_contact', {id:id}, function(res){
-            if(res.status) tr.remove(); else alert(res.message);
+        
+        $.post(API_URL + '?action=save_contact', {
+            poison_report_id: report_id,
+            contact_name: name,
+            contact_age: age,
+            contact_gender: gender,
+            contact_phone: phone,
+            contact_info_source: info_source,
+            symptoms: symptoms
+        }, function(res){
+            if(res.status){
+                loadContacts(report_id);
+            } else {
+                alert(res.message || 'فشل الإضافة');
+            }
         }, 'json');
     });
 
-    // ================= إدارة الوجبات =================
-    function loadMeals(report_id){
-        $.getJSON('poison_reports.php?action=list_meals&poison_report_id='+report_id, function(res){
+    $('#contacts_table').on('click', '.del_contact', function(){
+        if(!confirm('هل أنت متأكد من حذف هذا المصاب؟')) return;
+        var tr = $(this).closest('tr');
+        var id = tr.data('id');
+        var report_id = $('#report_id').val();
+        
+        $.post(API_URL + '?action=delete_contact', {id: id}, function(res){
             if(res.status){
-                var tbody = $('#meals_table tbody').empty();
-                res.data.forEach(m=>{
-                    var tr = `<tr data-id="${m.id}">
-                        <td>${m.day_number}</td>
-                        <td>${m.meal_type}</td>
-                        <td>${m.meal_name}</td>
-                        <td>${m.meal_details}</td>
-                        <td><button class="del_meal">حذف</button></td>
-                    </tr>`;
+                tr.remove();
+            } else {
+                alert(res.message || 'فشل الحذف');
+            }
+        }, 'json');
+    });
+
+    // Meals Management
+    function loadMeals(report_id){
+        $.getJSON(API_URL + '?action=list_meals&poison_report_id='+report_id, function(res){
+            var tbody = $('#meals_table tbody').empty();
+            if(res.status && res.data){
+                res.data.forEach(function(m){
+                    var tr = '<tr data-id="'+m.id+'">';
+                    tr += '<td>'+escapeHtml(m.day_number || '')+'</td>';
+                    tr += '<td>'+escapeHtml(m.meal_type || '')+'</td>';
+                    tr += '<td>'+escapeHtml(m.meal_name || '')+'</td>';
+                    tr += '<td>'+escapeHtml(m.meal_details || '')+'</td>';
+                    tr += '<td><button class="del_meal danger" style="font-size:10px">حذف</button></td>';
+                    tr += '</tr>';
                     tbody.append(tr);
                 });
             }
@@ -211,25 +621,130 @@ $(document).ready(function(){
 
     $('#add_meal').on('click', function(){
         var report_id = $('#report_id').val();
-        if(!report_id){ alert('احفظ البلاغ أولاً'); return; }
-        var day = prompt('اليوم (1,2,3...)'); if(!day) return;
-        var type = prompt('نوع الوجبة (فطار/غداء/عشاء)'); if(!type) return;
-        var name = prompt('اسم الوجبة'); if(!name) return;
-        var details = prompt('تفاصيل الوجبة'); 
-        $.post('poison_reports.php?action=save_meal', {
-            poison_report_id: report_id, day_number: day, meal_type:type, meal_name:name, meal_details:details
-        }, function(res){ if(res.status) loadMeals(report_id); else alert(res.message); }, 'json');
-    });
-
-    $('#meals_table').on('click','.del_meal', function(){
-        if(!confirm('هل أنت متأكد من الحذف؟')) return;
-        var tr = $(this).closest('tr');
-        var id = tr.data('id');
-        $.post('poison_reports.php?action=delete_meal',{id:id}, function(res){
-            if(res.status) tr.remove(); else alert(res.message);
+        if(!report_id){
+            alert('احفظ البلاغ أولاً');
+            return;
+        }
+        
+        var day = prompt('اليوم (1, 2, 3...)');
+        if(!day) return;
+        var type = prompt('نوع الوجبة (فطار/غداء/عشاء)');
+        if(!type) return;
+        var name = prompt('اسم الوجبة');
+        if(!name) return;
+        var details = prompt('تفاصيل الوجبة');
+        
+        $.post(API_URL + '?action=save_meal', {
+            poison_report_id: report_id,
+            day_number: day,
+            meal_type: type,
+            meal_name: name,
+            meal_details: details
+        }, function(res){
+            if(res.status){
+                loadMeals(report_id);
+            } else {
+                alert(res.message || 'فشل الإضافة');
+            }
         }, 'json');
     });
 
+    $('#meals_table').on('click', '.del_meal', function(){
+        if(!confirm('هل أنت متأكد من حذف هذه الوجبة؟')) return;
+        var tr = $(this).closest('tr');
+        var id = tr.data('id');
+        var report_id = $('#report_id').val();
+        
+        $.post(API_URL + '?action=delete_meal', {id: id}, function(res){
+            if(res.status){
+                tr.remove();
+            } else {
+                alert(res.message || 'فشل الحذف');
+            }
+        }, 'json');
+    });
+
+    // Attachments Management
+    function loadAttachments(report_id){
+        $.getJSON(API_URL, {action: 'get_report', id: report_id}, function(res){
+            var container = $('#attachmentsList').empty();
+            if(res.status && res.data && res.data.attachments){
+                var attachments = [];
+                try {
+                    attachments = JSON.parse(res.data.attachments);
+                } catch(e){
+                    attachments = [];
+                }
+                if(Array.isArray(attachments) && attachments.length){
+                    attachments.forEach(function(f){
+                        var item = $('<span class="attachment-item"></span>');
+                        item.append('<a href="uploads/poison_reports/'+encodeURIComponent(f)+'" target="_blank">'+escapeHtml(f)+'</a>');
+                        item.append('<span class="del-att" data-file="'+escapeHtml(f)+'">&times;</span>');
+                        container.append(item);
+                    });
+                }
+            }
+        });
+    }
+
+    $('#btnUpload').on('click', function(){
+        var report_id = $('#report_id').val();
+        if(!report_id){
+            alert('احفظ البلاغ أولاً');
+            return;
+        }
+        
+        var files = $('#attachment_file')[0].files;
+        if(!files.length){
+            alert('اختر ملفاً');
+            return;
+        }
+        
+        var formData = new FormData();
+        formData.append('poison_report_id', report_id);
+        formData.append('file', files[0]);
+        
+        $.ajax({
+            url: API_URL + '?action=upload_attachment',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(res){
+                if(res.status){
+                    showMsg('تم رفع المرفق');
+                    $('#attachment_file').val('');
+                    loadAttachments(report_id);
+                } else {
+                    showMsg(res.message || 'فشل الرفع', false);
+                }
+            },
+            error: function(){
+                showMsg('خطأ في رفع الملف', false);
+            }
+        });
+    });
+
+    $(document).on('click', '.del-att', function(){
+        if(!confirm('هل أنت متأكد من حذف هذا المرفق؟')) return;
+        var filename = $(this).data('file');
+        var report_id = $('#report_id').val();
+        
+        $.post(API_URL + '?action=delete_attachment', {
+            poison_report_id: report_id,
+            filename: filename
+        }, function(res){
+            if(res.status){
+                loadAttachments(report_id);
+            } else {
+                alert(res.message || 'فشل الحذف');
+            }
+        }, 'json');
+    });
+
+    // Initialize
+    searchReports();
 });
 </script>
 

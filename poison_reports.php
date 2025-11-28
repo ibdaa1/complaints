@@ -192,6 +192,17 @@ try {
             respond(true, '', $out);
             break;
 
+        // ----------------- GET SINGLE REPORT -----------------
+        case 'get_report':
+            $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+            if ($id <= 0) return respond(false,'Invalid report ID');
+            $res = $conn->query("SELECT * FROM poison_reports WHERE id = ".intval($id)." LIMIT 1");
+            if (!$res) return respond(false,'Query failed: '.$conn->error);
+            $row = $res->fetch_assoc();
+            if (!$row) return respond(false,'Report not found');
+            respond(true, '', $row);
+            break;
+
         // ----------------- CONTACTS CRUD -----------------
         case 'list_contacts':
             $report_id = isset($_GET['poison_report_id']) ? intval($_GET['poison_report_id']) : 0;
