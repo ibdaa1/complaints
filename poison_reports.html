@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>نموذج بلاغ التسمم</title>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<style>
+body { font-family: Arial; direction: rtl; }
+label { display: block; margin-top: 10px; }
+input, select, textarea { width: 100%; padding: 5px; margin-top: 2px; }
+button { margin-top: 10px; }
+.table-container { margin-top: 20px; }
+table { width: 100%; border-collapse: collapse; }
+table, th, td { border: 1px solid #ccc; }
+th, td { padding: 5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h2>إضافة / تعديل بلاغ تسمم</h2>
+
+<form id="poisonForm">
+    <input type="hidden" name="id" id="report_id">
+    <label>رقم الرخصة</label>
+    <input type="text" id="license_no" name="license_no">
+
+    <label>اختيار المنشأة</label>
+    <select id="facility_select">
+        <option value="">-- اختر منشأة --</option>
+    </select>
+
+    <label>أو بيانات بديلة إذا لم توجد منشأة</label>
+    <input type="text" name="source_name" placeholder="اسم المنشأة أو المنزل">
+    <input type="text" name="source_area" placeholder="المنطقة">
+    <input type="text" name="source_activity" placeholder="النشاط">
+    <textarea name="source_description" placeholder="وصف المصدر"></textarea>
+
+    <label>تاريخ ووقت البلاغ</label>
+    <input type="datetime-local" name="report_datetime">
+
+    <label>جهة البلاغ</label>
+    <input type="text" name="report_source">
+
+    <label>مسؤول مكافحة العدوى</label>
+    <input type="text" name="infection_officer">
+    <input type="text" name="infection_officer_phone" placeholder="رقم الهاتف">
+
+    <label>المستشفى (إن وجد)</label>
+    <input type="text" name="hospital_name">
+    <input type="datetime-local" name="admission_datetime" placeholder="تاريخ ووقت الدخول">
+
+    <label>مصدر الطعام</label>
+    <input type="text" name="food_source">
+    <input type="hidden" name="facility_unique_id" id="facility_unique_id">
+
+    <label>تاريخ ووقت تناول الطعام</label>
+    <input type="datetime-local" name="eating_datetime">
+
+    <label>هل تم تناول الطعام بالموقع؟</label>
+    <select name="consumed_on_site">
+        <option value="">-- اختر --</option>
+        <option value="نعم">نعم</option>
+        <option value="لا">لا</option>
+        <option value="غير معروف">غير معروف</option>
+    </select>
+
+    <label>نوع الطعام المشتبه فيه</label>
+    <input type="text" name="suspected_food">
+
+    <label>عدد المتناولين للطعام</label>
+    <input type="number" name="total_consumers">
+
+    <label>عدد الذين ظهر عليهم أعراض</label>
+    <input type="number" name="total_symptomatic">
+
+    <label>ملاحظات عامة</label>
+    <textarea name="notes"></textarea>
+
+    <button type="submit">حفظ البلاغ</button>
+</form>
+
+<div class="table-container">
+<h3>المخالطين</h3>
+<button id="add_contact">إضافة مخالط</button>
+<table id="contacts_table">
+    <thead>
+        <tr>
+            <th>الاسم</th><th>العمر</th><th>الجنس</th><th>الهاتف</th><th>مصدر المعلومات</th><th>الأعراض</th><th>إجراءات</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+</div>
+
+<div class="table-container">
+<h3>الوجبات</h3>
+<button id="add_meal">إضافة وجبة</button>
+<table id="meals_table">
+    <thead>
+        <tr>
+            <th>اليوم</th><th>نوع الوجبة</th><th>اسم الوجبة</th><th>التفاصيل</th><th>إجراءات</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+</div>
+
+<script>
+$(document).ready(function(){
+
+    // ================= جلب المنشآت عند إدخال رقم الرخصة =================
+    $('#license_no').on('change', function(){
+        var license = $(this).val().trim();
+        $('#facility_select').empty().append('<option value="">-- اختر منشأة --</option>');
+        $('#facility_unique_id').val('');
+        if(license==='') return;
+        $.getJSON('get_establishments_by_license.php', {license_no: license}, function(res){
+            if(res.success && res.data.length){
+                res.data.forEach(f => {
+                    $('#facility_select').append('<option value="'+f.unique_id+'">'+f.facility_name+'</option>');
+                });
+            }
+        });
+    });
+
+    // ================= اختيار المنشأة =================
+    $('#facility_select').on('change', function(){
+        var uid = $(this).val();
+        $('#facility_unique_id').val(uid);
+        if(uid==='') return;
+        // يمكن هنا تحميل بيانات المنشأة إذا أحببت
+    });
+
+    // ================= حفظ البلاغ =================
+    $('#poisonForm').on('submit', function(e){
+        e.preventDefault();
+        var formData = $(this).serializeArray();
+        $.post('poison_reports.php?action=save_report', formData, function(res){
+            if(res.status){
+                alert('تم حفظ البلاغ بنجاح');
+                $('#report_id').val(res.data);
+                loadContacts(res.data);
+                loadMeals(res.data);
+            }else alert(res.message);
+        }, 'json');
+    });
+
+    // ================= إدارة المخالطين =================
+    function loadContacts(report_id){
+        $.getJSON('poison_reports.php?action=list_contacts&poison_report_id='+report_id, function(res){
+            if(res.status){
+                var tbody = $('#contacts_table tbody').empty();
+                res.data.forEach(c=>{
+                    var tr = `<tr data-id="${c.id}">
+                        <td>${c.contact_name}</td>
+                        <td>${c.contact_age}</td>
+                        <td>${c.contact_gender}</td>
+                        <td>${c.contact_phone}</td>
+                        <td>${c.contact_info_source}</td>
+                        <td>${c.symptoms}</td>
+                        <td><button class="del_contact">حذف</button></td>
+                    </tr>`;
+                    tbody.append(tr);
+                });
+            }
+        });
+    }
+
+    $('#add_contact').on('click', function(){
+        var report_id = $('#report_id').val();
+        if(!report_id){ alert('احفظ البلاغ أولاً'); return; }
+        var name = prompt('اسم المخالط'); if(!name) return;
+        var age = prompt('العمر');
+        var gender = prompt('الجنس (ذكر/أنثى/غير معروف)');
+        var phone = prompt('الهاتف');
+        var info_source = prompt('مصدر المعلومات');
+        var symptoms = prompt('الأعراض');
+        $.post('poison_reports.php?action=save_contact', {
+            poison_report_id: report_id, contact_name: name, contact_age: age,
+            contact_gender: gender, contact_phone: phone, contact_info_source: info_source, symptoms: symptoms
+        }, function(res){ if(res.status) loadContacts(report_id); else alert(res.message); }, 'json');
+    });
+
+    $('#contacts_table').on('click','.del_contact', function(){
+        if(!confirm('هل أنت متأكد من الحذف؟')) return;
+        var tr = $(this).closest('tr');
+        var id = tr.data('id');
+        $.post('poison_reports.php?action=delete_contact', {id:id}, function(res){
+            if(res.status) tr.remove(); else alert(res.message);
+        }, 'json');
+    });
+
+    // ================= إدارة الوجبات =================
+    function loadMeals(report_id){
+        $.getJSON('poison_reports.php?action=list_meals&poison_report_id='+report_id, function(res){
+            if(res.status){
+                var tbody = $('#meals_table tbody').empty();
+                res.data.forEach(m=>{
+                    var tr = `<tr data-id="${m.id}">
+                        <td>${m.day_number}</td>
+                        <td>${m.meal_type}</td>
+                        <td>${m.meal_name}</td>
+                        <td>${m.meal_details}</td>
+                        <td><button class="del_meal">حذف</button></td>
+                    </tr>`;
+                    tbody.append(tr);
+                });
+            }
+        });
+    }
+
+    $('#add_meal').on('click', function(){
+        var report_id = $('#report_id').val();
+        if(!report_id){ alert('احفظ البلاغ أولاً'); return; }
+        var day = prompt('اليوم (1,2,3...)'); if(!day) return;
+        var type = prompt('نوع الوجبة (فطار/غداء/عشاء)'); if(!type) return;
+        var name = prompt('اسم الوجبة'); if(!name) return;
+        var details = prompt('تفاصيل الوجبة'); 
+        $.post('poison_reports.php?action=save_meal', {
+            poison_report_id: report_id, day_number: day, meal_type:type, meal_name:name, meal_details:details
+        }, function(res){ if(res.status) loadMeals(report_id); else alert(res.message); }, 'json');
+    });
+
+    $('#meals_table').on('click','.del_meal', function(){
+        if(!confirm('هل أنت متأكد من الحذف؟')) return;
+        var tr = $(this).closest('tr');
+        var id = tr.data('id');
+        $.post('poison_reports.php?action=delete_meal',{id:id}, function(res){
+            if(res.status) tr.remove(); else alert(res.message);
+        }, 'json');
+    });
+
+});
+</script>
+
+</body>
+</html>
