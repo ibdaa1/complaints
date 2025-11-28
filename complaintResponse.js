@@ -40,21 +40,8 @@
 
   // إنشاء حقول العرض والحقل المخفي إذا لم تكن موجودة
   function ensureResponseSpeedElements() {
-    let display = $id('response_speed_display');
-    if (!display) {
-      // نضيف حقل عرضي بعد select التصنيف إن وجد
-      const sel = $id('complaint_category');
-      if (sel && sel.parentNode) {
-        display = document.createElement('input');
-        display.type = 'text';
-        display.id = 'response_speed_display';
-        display.readOnly = true;
-        display.style.marginTop = '6px';
-        display.placeholder = 'سرعة الاستجابة تلقائياً';
-        // وضع العرض أسفل select
-        sel.parentNode.appendChild(display);
-      }
-    }
+    // لم نعد نضيف response_speed_display - تمت إزالته من الكود لتجنب التكرار
+    // الآن يتم عرض سرعة الاستجابة فقط عبر الحقل المخفي
 
     let hidden = $id('response_speed');
     if (!hidden) {
@@ -66,7 +53,7 @@
       if (form) form.appendChild(hidden);
       else document.body.appendChild(hidden);
     }
-    return { display: display || $id('response_speed_display'), hidden: hidden || $id('response_speed') };
+    return { hidden: hidden || $id('response_speed') };
   }
 
   // حدث تغيير التصنيف -> تحديث السرعة
@@ -76,7 +63,6 @@
     const cat = (sel.value || '').trim();
     const speed = complaintUrgency(cat);
     const els = ensureResponseSpeedElements();
-    if (els.display) els.display.value = speed;
     if (els.hidden) els.hidden.value = speed;
   }
 
@@ -85,11 +71,8 @@
   function syncResponseSpeedOnLoad() {
     const hidden = $id('response_speed');
     const sel = $id('complaint_category');
-    const display = $id('response_speed_display');
-    // إذا كان الحقل المخفي موجود وله قيمة (ربما ملئه الخادم عند فتح الشكوى) نعرضها
+    // إذا كان الحقل المخفي موجود وله قيمة (ربما ملئه الخادم عند فتح الشكوى) نتركها
     if (hidden && hidden.value) {
-      if (!display) ensureResponseSpeedElements();
-      if ($id('response_speed_display')) $id('response_speed_display').value = hidden.value;
       return;
     }
     // وإلا حسب من التصنيف الحالي
@@ -109,7 +92,6 @@
           const sel = $id('complaint_category');
           const speed = complaintUrgency((sel && sel.value) || '');
           const els = ensureResponseSpeedElements();
-          if (els.display) els.display.value = speed;
           if (els.hidden) els.hidden.value = speed;
         });
         el._responseSpeedHooked = true;

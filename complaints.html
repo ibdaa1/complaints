@@ -159,8 +159,8 @@ tbody tr:hover{background:#f9f9f9}
       <div class="row">
         <div class="col"><label>المشرف</label><span id="sup_display" class="display-name">-</span><input type="hidden" id="supervisor_empid"></div>
         <div class="col"><label>تصنيف الشكوى</label><select id="complaint_category" class="supervisor-field"></select></div>
-        <div class="col"><label>سرعة الاستجابة</label><input id="response_speed" readonly class="supervisor-field"></div>
       </div>
+      <input type="hidden" id="response_speed">
       <div class="row">
         <div class="col"><label>تعليق المشرف</label><textarea id="supervisor_comment" class="supervisor-field"></textarea></div>
         <div class="col"><label>تاريخ متابعة المشرف</label><input id="followup_datetime" type="datetime-local" readonly></div>
@@ -203,16 +203,17 @@ tbody tr:hover{background:#f9f9f9}
     <h4 class="section-title">المرفقات</h4>
     <div class="row">
       <div class="col"><label>رفع مرفق</label><input type="file" id="attachment_file"></div>
-      <div style="width:120px;display:flex;align-items:flex-end"><button id="btnUpload" type="button" class="secondary">رفع</button></div>
+      <div style="width:80px;display:flex;align-items:flex-end"><button id="btnUpload" type="button" class="secondary">رفع</button></div>
+      <div style="width:100px;display:flex;align-items:flex-end"><button id="btnDeleteAttachment" type="button" class="clear">حذف المرفق</button></div>
     </div>
     <input type="hidden" id="attachment_url">
     <div id="attachmentLink" class="small" style="margin-top:8px"></div>
   </div>
 
   <!-- Save Button - prominent at bottom -->
-  <div class="card" style="text-align:center;background:var(--primary);padding:16px">
-    <button id="btnSave" type="button" class="save-main">💾 حفظ الشكوى</button>
-    <button id="btnReset" class="clear" type="button" style="margin-right:12px">مسح النموذج</button>
+  <div class="card" style="text-align:center;background:var(--primary);padding:10px">
+    <button id="btnSave" type="button" style="background:var(--gold);color:#fff;padding:8px 16px;font-size:14px;border:none;border-radius:6px;cursor:pointer;font-weight:bold">💾 حفظ الشكوى</button>
+    <button id="btnReset" class="clear" type="button" style="margin-right:12px;padding:6px 12px;font-size:12px">مسح النموذج</button>
     <span id="formMsg" class="small" style="margin-right:auto;color:#fff"></span>
   </div>
 
@@ -221,6 +222,7 @@ tbody tr:hover{background:#f9f9f9}
     <h4 class="section-title">قائمة الشكاوى</h4>
 
     <div class="filter-row">
+      <div class="filter-col" style="width:80px"><label>رقم الشكوى</label><input id="filter_id" placeholder="ID"></div>
       <div class="filter-col" style="min-width:150px"><label>بحث شامل</label><input id="searchAll" placeholder="بحث"></div>
       <div class="filter-col" style="width:120px"><label>هاتف الشاكي</label><input id="filter_phone" placeholder="هاتف"></div>
       <div class="filter-col" style="width:140px"><label>المنطقة</label><select id="filter_area"><option value="">الكل</option></select></div>
@@ -517,6 +519,7 @@ function populateFilters(){
 function renderTable(){
   const q = ($('searchAll').value || '').toLowerCase().trim();
   const phone = ($('filter_phone').value || '').trim();
+  const filterId = ($('filter_id').value || '').trim();
   const filterArea = ($('filter_area').value || '').trim();
   const filterActivity = ($('filter_activity').value || '').trim();
   const filterUnit = ($('filter_unit').value || '').trim();
@@ -531,6 +534,7 @@ function renderTable(){
 
   const rows = complaints.filter(r => {
     const est = establishments[r.establishment_unique_id] || {};
+    if(filterId && String(r.id) !== filterId) return false;
     if(q){ const searchStr = JSON.stringify(r).toLowerCase() + JSON.stringify(est).toLowerCase(); if(!searchStr.includes(q)) return false; }
     if(phone && !(r.complainant_phone || '').includes(phone)) return false;
     if(filterArea && (est.area || '') !== filterArea) return false;
@@ -551,7 +555,7 @@ function renderTable(){
   if(!rows.length){ $('tableWrap').innerHTML = '<div class="small">لا توجد سجلات</div>'; return; }
 
   let html = '<table><thead><tr>';
-  const headers = ['تاريخ الشكوى','اسم الشاكي','هاتف الشاكي','حالة الشكوى','المفتش','السوبرفايزر','المدير','اسم المنشأة','رقم الرخصة','وقت الاستجابة','وقت الإغلاق','إجراءات'];
+  const headers = ['ID','تاريخ الشكوى','اسم الشاكي','هاتف الشاكي','حالة الشكوى','المفتش','السوبرفايزر','المدير','اسم المنشأة','رقم الرخصة','وقت الاستجابة','وقت الإغلاق','إجراءات'];
   headers.forEach(h => html += `<th>${escapeHtml(h)}</th>`);
   html += '</tr></thead><tbody>';
 
@@ -564,6 +568,7 @@ function renderTable(){
     const closureTime = calcTimeDiff(r.inspector_received_datetime, r.closed_datetime, 72);
     
     html += '<tr>';
+    html += `<td>${escapeHtml(String(r.id || ''))}</td>`;
     html += `<td>${escapeHtml(dateVal)}</td>`;
     html += `<td>${escapeHtml(r.complainant_name || '')}</td>`;
     html += `<td>${escapeHtml(r.complainant_phone || '')}</td>`;
@@ -870,6 +875,44 @@ async function onUploadAttachment(){
   } catch(e){ console.error(e); alert('خطأ بالرفع'); }
 }
 
+async function onDeleteAttachment(){
+  const attachmentUrl = $('attachment_url').value;
+  if(!attachmentUrl){ alert('لا يوجد مرفق للحذف'); return; }
+  if(!confirm('هل تريد حذف المرفق؟')) return;
+  
+  // Extract filename from attachment URL
+  const filename = attachmentUrl.split('/').pop();
+  
+  try {
+    const params = new URLSearchParams({ action: 'delete_attachment', filename: filename });
+    const res = await fetch('complaints.php', { method:'POST', body: params, credentials:'same-origin' });
+    const j = await res.json();
+    if(!j.success){ 
+      // Even if server delete fails, clear the UI reference
+      console.warn('فشل حذف الملف من السيرفر:', j.message || '');
+    }
+  } catch(e){ 
+    console.warn('خطأ في حذف المرفق من السيرفر:', e);
+  }
+  
+  // Clear attachment reference
+  $('attachment_url').value = '';
+  $('attachmentLink').innerHTML = '';
+  $('attachment_file').value = '';
+  
+  // If complaint is loaded, update it to remove attachment_url
+  const complaintId = $('id').value;
+  if(complaintId){
+    try {
+      const updateParams = new URLSearchParams({ action: 'update', id: complaintId, attachment_url: '' });
+      await fetch('complaints.php', { method:'POST', body: updateParams, credentials:'same-origin' });
+    } catch(e){ console.warn('خطأ في تحديث الشكوى:', e); }
+  }
+  
+  alert('تم حذف المرفق');
+}
+}
+
 async function onSearchLicense(){
   const license = $('license_no_search').value.trim();
   if(!license){ $('estList').textContent = 'ادخل رقم الترخيص'; return; }
@@ -1054,7 +1097,7 @@ function bindUI(){
   });
   $('btnApplyFilters').addEventListener('click', renderTable);
   $('btnResetFilters').addEventListener('click', function(){
-    ['searchAll','filter_phone','filter_date_from','filter_date_to'].forEach(id => { if($(id)) $(id).value = ''; });
+    ['searchAll','filter_phone','filter_date_from','filter_date_to','filter_id'].forEach(id => { if($(id)) $(id).value = ''; });
     ['filter_area','filter_activity','filter_unit','filter_hazard','filter_sub_sector'].forEach(id => { if($(id)) $(id).value = ''; });
     renderTable();
   });
@@ -1090,6 +1133,7 @@ function bindUI(){
   $('btnAddProduct').addEventListener('click', function(){ addProductRow(true); });
   $('btnSaveProducts').addEventListener('click', saveProductsBulk);
   $('btnUpload').addEventListener('click', onUploadAttachment);
+  $('btnDeleteAttachment').addEventListener('click', onDeleteAttachment);
   
   // Print complaint button
   if($('btnPrintComplaint')) {
