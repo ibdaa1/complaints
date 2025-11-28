@@ -36,6 +36,9 @@ tbody tr:hover{background:#f9f9f9}
 .attachment-item{display:inline-block;padding:4px 8px;background:#f0f0f0;border-radius:4px;margin:4px;font-size:11px}
 .attachment-item a{color:var(--accent)}
 .attachment-item .del-att{cursor:pointer;color:#d32f2f;margin-right:8px}
+.display-name{display:inline-block;padding:4px 6px;background:#f9f9f9;border-radius:6px;border:1px solid #eee;font-size:12px}
+.inline-input{width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:11px;box-sizing:border-box}
+.inline-select{width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:11px}
 @media(max-width:900px){.row{flex-direction:column}.filter-row{flex-direction:column}}
 </style>
 </head>
@@ -227,31 +230,56 @@ tbody tr:hover{background:#f9f9f9}
         <div class="col"><label>حجم الإنتاج في المنشأة</label><input type="text" name="production_volume" placeholder="حجم الإنتاج"></div>
       </div>
 
-      <!-- Meals 72h Summary -->
-      <div class="section-title">الوجبات خلال 72 ساعة (ملخص)</div>
-      <div class="row">
-        <div class="col-2"><label>ملخص الوجبات</label><textarea name="meals_72h_summary" placeholder="الوجبات التي تناولها المصاب قبل 72 ساعة"></textarea></div>
-      </div>
-
-      <!-- Team and Approvals -->
+      <!-- Team and Approvals - Session Based -->
       <div class="section-title">الفريق والاعتمادات</div>
       <div class="row">
-        <div class="col"><label>سوبرفايزر</label><input type="text" name="supervisor" placeholder="اسم السوبرفايزر"></div>
         <div class="col"><label>أعضاء فريق التقصي</label><textarea name="investigation_team_members" placeholder="أعضاء فريق التقصي"></textarea></div>
-      </div>
-      <div class="row">
         <div class="col-2"><label>توصيات فريق التقصي</label><textarea name="investigation_recommendations" placeholder="التوصيات"></textarea></div>
       </div>
+
+      <!-- Supervisor Section -->
+      <h4 style="margin:12px 0 8px 0">قسم السوبرفايزر</h4>
       <div class="row">
-        <div class="col"><label>اعتماد رئيس الشعبة</label><input type="text" name="section_head_approval" placeholder="اعتماد رئيس الشعبة"></div>
-        <div class="col"><label>اعتماد رئيس القسم</label><input type="text" name="division_head_approval" placeholder="اعتماد رئيس القسم"></div>
+        <div class="col">
+          <label>السوبرفايزر</label>
+          <span id="supervisor_display" class="display-name">-</span>
+          <input type="hidden" name="supervisor_empid" id="supervisor_empid">
+        </div>
+        <div class="col"><label>تاريخ التوقيع</label><input type="datetime-local" name="followup_datetime" id="followup_datetime" readonly></div>
+      </div>
+      <div style="margin-top:8px">
+        <button type="button" id="btnSignSupervisor" class="secondary">توقيع السوبرفايزر</button>
+        <button type="button" id="btnClearSupervisor" class="clear">حذف توقيع السوبرفايزر</button>
       </div>
 
-      <!-- Dates -->
-      <div class="section-title">تواريخ المتابعة</div>
+      <!-- Section Head -->
+      <h4 style="margin:12px 0 8px 0">قسم رئيس الشعبة</h4>
       <div class="row">
-        <div class="col"><label>تاريخ المتابعة</label><input type="datetime-local" name="followup_datetime"></div>
-        <div class="col"><label>تاريخ الإغلاق</label><input type="datetime-local" name="closed_datetime"></div>
+        <div class="col">
+          <label>رئيس الشعبة</label>
+          <span id="section_head_display" class="display-name">-</span>
+          <input type="hidden" name="section_head_empid" id="section_head_empid">
+        </div>
+        <div class="col"><label>تاريخ الاعتماد</label><input type="datetime-local" name="section_head_datetime" id="section_head_datetime" readonly></div>
+      </div>
+      <div style="margin-top:8px">
+        <button type="button" id="btnSignSectionHead" class="secondary">اعتماد رئيس الشعبة</button>
+        <button type="button" id="btnClearSectionHead" class="clear">حذف اعتماد رئيس الشعبة</button>
+      </div>
+
+      <!-- Division Head -->
+      <h4 style="margin:12px 0 8px 0">قسم رئيس القسم</h4>
+      <div class="row">
+        <div class="col">
+          <label>رئيس القسم</label>
+          <span id="division_head_display" class="display-name">-</span>
+          <input type="hidden" name="division_head_empid" id="division_head_empid">
+        </div>
+        <div class="col"><label>تاريخ الإغلاق</label><input type="datetime-local" name="closed_datetime" id="closed_datetime" readonly></div>
+      </div>
+      <div style="margin-top:8px">
+        <button type="button" id="btnSignDivisionHead" class="secondary">اعتماد رئيس القسم</button>
+        <button type="button" id="btnClearDivisionHead" class="clear">حذف اعتماد رئيس القسم</button>
       </div>
 
       <!-- Notes -->
@@ -260,7 +288,7 @@ tbody tr:hover{background:#f9f9f9}
         <div class="col-2"><label>ملاحظات عامة</label><textarea name="notes" placeholder="ملاحظات عامة"></textarea></div>
       </div>
 
-      <!-- Attachments -->
+      <!-- Attachments - Can upload before saving -->
       <div class="section-title">المرفقات</div>
       <div class="row">
         <div class="col">
@@ -272,6 +300,7 @@ tbody tr:hover{background:#f9f9f9}
         </div>
       </div>
       <div id="attachmentsList" class="small" style="margin-top:8px"></div>
+      <div id="pendingAttachments" class="small" style="margin-top:8px"></div>
 
       <!-- Action Buttons -->
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
@@ -283,38 +312,83 @@ tbody tr:hover{background:#f9f9f9}
     </form>
   </div>
 
-  <!-- Contacts Table -->
+  <!-- Contacts Section - Inline Form -->
   <div class="card">
     <h4 style="margin:0 0 8px 0">المصابين/المخالطين</h4>
-    <div style="margin-bottom:8px">
-      <button id="add_contact" class="secondary">إضافة مصاب</button>
-    </div>
     <div class="table-wrap">
       <table id="contacts_table">
         <thead>
           <tr>
-            <th>الاسم</th><th>العمر</th><th>الجنس</th><th>الهاتف</th><th>مصدر المعلومات</th><th>الأعراض</th><th>إجراءات</th>
+            <th style="width:150px">الاسم</th>
+            <th style="width:60px">العمر</th>
+            <th style="width:80px">الجنس</th>
+            <th style="width:100px">الهاتف</th>
+            <th style="width:120px">مصدر المعلومات</th>
+            <th>الأعراض</th>
+            <th style="width:80px">إجراءات</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="contacts_tbody">
+          <!-- Inline input row -->
+          <tr id="contact_input_row">
+            <td><input type="text" class="inline-input" id="new_contact_name" placeholder="الاسم"></td>
+            <td><input type="number" class="inline-input" id="new_contact_age" placeholder="العمر" min="0"></td>
+            <td>
+              <select class="inline-select" id="new_contact_gender">
+                <option value="">--</option>
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+                <option value="غير معروف">غير معروف</option>
+              </select>
+            </td>
+            <td><input type="text" class="inline-input" id="new_contact_phone" placeholder="الهاتف"></td>
+            <td><input type="text" class="inline-input" id="new_contact_info_source" placeholder="المصدر"></td>
+            <td><input type="text" class="inline-input" id="new_contact_symptoms" placeholder="الأعراض"></td>
+            <td><button type="button" id="btnAddContact" class="secondary" style="font-size:10px">إضافة</button></td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Meals Table -->
+  <!-- Meals Section - Inline Form -->
   <div class="card">
     <h4 style="margin:0 0 8px 0">الوجبات (تفصيل 72 ساعة)</h4>
-    <div style="margin-bottom:8px">
-      <button id="add_meal" class="secondary">إضافة وجبة</button>
-    </div>
     <div class="table-wrap">
       <table id="meals_table">
         <thead>
           <tr>
-            <th>اليوم</th><th>نوع الوجبة</th><th>اسم الوجبة</th><th>التفاصيل</th><th>إجراءات</th>
+            <th style="width:80px">اليوم</th>
+            <th style="width:100px">نوع الوجبة</th>
+            <th style="width:150px">اسم الوجبة</th>
+            <th>التفاصيل</th>
+            <th style="width:80px">إجراءات</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="meals_tbody">
+          <!-- Inline input row -->
+          <tr id="meal_input_row">
+            <td>
+              <select class="inline-select" id="new_meal_day">
+                <option value="">--</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </td>
+            <td>
+              <select class="inline-select" id="new_meal_type">
+                <option value="">--</option>
+                <option value="فطار">فطار</option>
+                <option value="غداء">غداء</option>
+                <option value="عشاء">عشاء</option>
+              </select>
+            </td>
+            <td><input type="text" class="inline-input" id="new_meal_name" placeholder="اسم الوجبة"></td>
+            <td><input type="text" class="inline-input" id="new_meal_details" placeholder="التفاصيل"></td>
+            <td><button type="button" id="btnAddMeal" class="secondary" style="font-size:10px">إضافة</button></td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
@@ -324,6 +398,9 @@ tbody tr:hover{background:#f9f9f9}
 <script>
 $(document).ready(function(){
     var API_URL = 'poison_reports.php';
+    var employees = {};
+    var currentUser = {};
+    var pendingFiles = []; // Files uploaded before save
     
     // Helper Functions
     function showMsg(msg, ok){
@@ -336,9 +413,41 @@ $(document).ready(function(){
         return String(v).replace(' ','T').slice(0,16);
     }
     
+    function toDBDateTime(v){
+        if(!v) return '';
+        var d = new Date(v);
+        if(isNaN(d)) return '';
+        var pad = function(n){ return String(n).padStart(2,'0'); };
+        return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+    }
+    
     function escapeHtml(s){
         if(!s) return '';
         return $('<div>').text(s).html();
+    }
+    
+    function getName(empid){
+        if(!empid) return '-';
+        return employees[String(empid)] || String(empid);
+    }
+
+    // Load user and employees
+    function loadUserAndEmployees(){
+        $.getJSON('user_data.php', function(u){
+            if(u && u.success && u.user_data){
+                currentUser = u.user_data;
+            }
+        });
+        
+        $.getJSON('get_employees.php', function(em){
+            if(em && em.success && Array.isArray(em.data)){
+                employees = {};
+                em.data.forEach(function(x){
+                    var name = x.EmpName || x.full_name || x.name || x.displayName;
+                    employees[String(x.EmpID)] = name || String(x.EmpID);
+                });
+            }
+        });
     }
 
     // Search License for Establishments
@@ -378,12 +487,18 @@ $(document).ready(function(){
     $('#poisonForm').on('submit', function(e){
         e.preventDefault();
         var formData = $(this).serializeArray();
-        var id = $('#report_id').val();
+        
+        // Add pending attachments
+        if(pendingFiles.length > 0){
+            formData.push({name: 'pending_attachments', value: JSON.stringify(pendingFiles)});
+        }
         
         $.post(API_URL + '?action=save_report', formData, function(res){
             if(res.status){
                 showMsg('تم حفظ البلاغ بنجاح - ID: ' + res.data);
                 $('#report_id').val(res.data);
+                pendingFiles = [];
+                $('#pendingAttachments').empty();
                 loadContacts(res.data);
                 loadMeals(res.data);
                 loadAttachments(res.data);
@@ -423,9 +538,12 @@ $(document).ready(function(){
         $('#poisonForm')[0].reset();
         $('#report_id').val('');
         $('#facility_select').empty().append('<option value="">-- اختر منشأة --</option>');
-        $('#contacts_table tbody').empty();
-        $('#meals_table tbody').empty();
+        $('#contacts_tbody tr:not(#contact_input_row)').remove();
+        $('#meals_tbody tr:not(#meal_input_row)').remove();
         $('#attachmentsList').empty();
+        $('#pendingAttachments').empty();
+        pendingFiles = [];
+        $('#supervisor_display, #section_head_display, #division_head_display').text('-');
         showMsg('');
     }
     
@@ -492,10 +610,12 @@ $(document).ready(function(){
                     'hospital_name','admission_datetime','food_source','facility_unique_id','eating_datetime',
                     'samples_entry_datetime','samples_result_datetime','followup_datetime','closed_datetime',
                     'consumed_on_site','last_pest_control','suspected_food','total_consumers','total_symptomatic',
-                    'meals_72h_summary','patient_samples_taken','patient_samples_results','establishment_samples_taken',
+                    'patient_samples_taken','patient_samples_results','establishment_samples_taken',
                     'establishment_samples_results','time_between_food_and_symptoms','symptoms','establishment_actions',
-                    'production_volume','initial_diagnosis','final_diagnosis','supervisor','final_result',
-                    'investigation_recommendations','investigation_team_members','section_head_approval','division_head_approval',
+                    'production_volume','initial_diagnosis','final_diagnosis','final_result',
+                    'investigation_recommendations','investigation_team_members',
+                    'supervisor_empid','section_head_empid','division_head_empid',
+                    'section_head_datetime',
                     'form_number','notes'];
                 
                 fields.forEach(function(f){
@@ -513,6 +633,11 @@ $(document).ready(function(){
                 if(r.establishment_unique_id){
                     $('#facility_select').append('<option value="'+escapeHtml(r.establishment_unique_id)+'" selected>'+escapeHtml(r.establishment_unique_id)+'</option>');
                 }
+                
+                // Display names for approvals
+                $('#supervisor_display').text(getName(r.supervisor_empid));
+                $('#section_head_display').text(getName(r.section_head_empid));
+                $('#division_head_display').text(getName(r.division_head_empid));
                 
                 // Toggle source fields
                 $('#source_type').trigger('change');
@@ -532,10 +657,73 @@ $(document).ready(function(){
         });
     }
 
-    // Contacts Management
+    // Supervisor Sign
+    $('#btnSignSupervisor').on('click', function(){
+        $.getJSON('user_data.php', function(ud){
+            if(!ud || !ud.success || !ud.user_data || !ud.user_data.EmpID){
+                alert('غير مسجل الدخول');
+                return;
+            }
+            var empid = ud.user_data.EmpID;
+            var now = toDBDateTime(new Date());
+            $('#supervisor_empid').val(empid);
+            $('#followup_datetime').val(toLocalDateTime(now));
+            $('#supervisor_display').text(getName(empid));
+        });
+    });
+    
+    $('#btnClearSupervisor').on('click', function(){
+        $('#supervisor_empid').val('');
+        $('#followup_datetime').val('');
+        $('#supervisor_display').text('-');
+    });
+
+    // Section Head Sign
+    $('#btnSignSectionHead').on('click', function(){
+        $.getJSON('user_data.php', function(ud){
+            if(!ud || !ud.success || !ud.user_data || !ud.user_data.EmpID){
+                alert('غير مسجل الدخول');
+                return;
+            }
+            var empid = ud.user_data.EmpID;
+            var now = toDBDateTime(new Date());
+            $('#section_head_empid').val(empid);
+            $('#section_head_datetime').val(toLocalDateTime(now));
+            $('#section_head_display').text(getName(empid));
+        });
+    });
+    
+    $('#btnClearSectionHead').on('click', function(){
+        $('#section_head_empid').val('');
+        $('#section_head_datetime').val('');
+        $('#section_head_display').text('-');
+    });
+
+    // Division Head Sign
+    $('#btnSignDivisionHead').on('click', function(){
+        $.getJSON('user_data.php', function(ud){
+            if(!ud || !ud.success || !ud.user_data || !ud.user_data.EmpID){
+                alert('غير مسجل الدخول');
+                return;
+            }
+            var empid = ud.user_data.EmpID;
+            var now = toDBDateTime(new Date());
+            $('#division_head_empid').val(empid);
+            $('#closed_datetime').val(toLocalDateTime(now));
+            $('#division_head_display').text(getName(empid));
+        });
+    });
+    
+    $('#btnClearDivisionHead').on('click', function(){
+        $('#division_head_empid').val('');
+        $('#closed_datetime').val('');
+        $('#division_head_display').text('-');
+    });
+
+    // Contacts Management - Inline
     function loadContacts(report_id){
         $.getJSON(API_URL + '?action=list_contacts&poison_report_id='+report_id, function(res){
-            var tbody = $('#contacts_table tbody').empty();
+            $('#contacts_tbody tr:not(#contact_input_row)').remove();
             if(res.status && res.data){
                 res.data.forEach(function(c){
                     var tr = '<tr data-id="'+c.id+'">';
@@ -547,37 +735,38 @@ $(document).ready(function(){
                     tr += '<td>'+escapeHtml(c.symptoms || '')+'</td>';
                     tr += '<td><button class="del_contact danger" style="font-size:10px">حذف</button></td>';
                     tr += '</tr>';
-                    tbody.append(tr);
+                    $('#contact_input_row').before(tr);
                 });
             }
         });
     }
 
-    $('#add_contact').on('click', function(){
+    $('#btnAddContact').on('click', function(){
         var report_id = $('#report_id').val();
         if(!report_id){
             alert('احفظ البلاغ أولاً');
             return;
         }
         
-        var name = prompt('اسم المصاب/المخالط');
-        if(!name) return;
-        var age = prompt('العمر');
-        var gender = prompt('الجنس (ذكر/أنثى/غير معروف)');
-        var phone = prompt('رقم الهاتف');
-        var info_source = prompt('مصدر المعلومات');
-        var symptoms = prompt('الأعراض');
+        var name = $('#new_contact_name').val().trim();
+        if(!name){
+            alert('أدخل اسم المصاب');
+            return;
+        }
         
         $.post(API_URL + '?action=save_contact', {
             poison_report_id: report_id,
             contact_name: name,
-            contact_age: age,
-            contact_gender: gender,
-            contact_phone: phone,
-            contact_info_source: info_source,
-            symptoms: symptoms
+            contact_age: $('#new_contact_age').val(),
+            contact_gender: $('#new_contact_gender').val(),
+            contact_phone: $('#new_contact_phone').val(),
+            contact_info_source: $('#new_contact_info_source').val(),
+            symptoms: $('#new_contact_symptoms').val()
         }, function(res){
             if(res.status){
+                // Clear inputs
+                $('#new_contact_name, #new_contact_age, #new_contact_phone, #new_contact_info_source, #new_contact_symptoms').val('');
+                $('#new_contact_gender').val('');
                 loadContacts(report_id);
             } else {
                 alert(res.message || 'فشل الإضافة');
@@ -589,7 +778,6 @@ $(document).ready(function(){
         if(!confirm('هل أنت متأكد من حذف هذا المصاب؟')) return;
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        var report_id = $('#report_id').val();
         
         $.post(API_URL + '?action=delete_contact', {id: id}, function(res){
             if(res.status){
@@ -600,10 +788,10 @@ $(document).ready(function(){
         }, 'json');
     });
 
-    // Meals Management
+    // Meals Management - Inline
     function loadMeals(report_id){
         $.getJSON(API_URL + '?action=list_meals&poison_report_id='+report_id, function(res){
-            var tbody = $('#meals_table tbody').empty();
+            $('#meals_tbody tr:not(#meal_input_row)').remove();
             if(res.status && res.data){
                 res.data.forEach(function(m){
                     var tr = '<tr data-id="'+m.id+'">';
@@ -613,35 +801,39 @@ $(document).ready(function(){
                     tr += '<td>'+escapeHtml(m.meal_details || '')+'</td>';
                     tr += '<td><button class="del_meal danger" style="font-size:10px">حذف</button></td>';
                     tr += '</tr>';
-                    tbody.append(tr);
+                    $('#meal_input_row').before(tr);
                 });
             }
         });
     }
 
-    $('#add_meal').on('click', function(){
+    $('#btnAddMeal').on('click', function(){
         var report_id = $('#report_id').val();
         if(!report_id){
             alert('احفظ البلاغ أولاً');
             return;
         }
         
-        var day = prompt('اليوم (1, 2, 3...)');
-        if(!day) return;
-        var type = prompt('نوع الوجبة (فطار/غداء/عشاء)');
-        if(!type) return;
-        var name = prompt('اسم الوجبة');
-        if(!name) return;
-        var details = prompt('تفاصيل الوجبة');
+        var day = $('#new_meal_day').val();
+        var type = $('#new_meal_type').val();
+        var name = $('#new_meal_name').val().trim();
+        
+        if(!day || !type || !name){
+            alert('أدخل بيانات الوجبة');
+            return;
+        }
         
         $.post(API_URL + '?action=save_meal', {
             poison_report_id: report_id,
             day_number: day,
             meal_type: type,
             meal_name: name,
-            meal_details: details
+            meal_details: $('#new_meal_details').val()
         }, function(res){
             if(res.status){
+                // Clear inputs
+                $('#new_meal_day, #new_meal_type').val('');
+                $('#new_meal_name, #new_meal_details').val('');
                 loadMeals(report_id);
             } else {
                 alert(res.message || 'فشل الإضافة');
@@ -653,7 +845,6 @@ $(document).ready(function(){
         if(!confirm('هل أنت متأكد من حذف هذه الوجبة؟')) return;
         var tr = $(this).closest('tr');
         var id = tr.data('id');
-        var report_id = $('#report_id').val();
         
         $.post(API_URL + '?action=delete_meal', {id: id}, function(res){
             if(res.status){
@@ -664,7 +855,7 @@ $(document).ready(function(){
         }, 'json');
     });
 
-    // Attachments Management
+    // Attachments Management - Can upload before save
     function loadAttachments(report_id){
         $.getJSON(API_URL, {action: 'get_report', id: report_id}, function(res){
             var container = $('#attachmentsList').empty();
@@ -679,57 +870,106 @@ $(document).ready(function(){
                     attachments.forEach(function(f){
                         var item = $('<span class="attachment-item"></span>');
                         item.append('<a href="uploads/poison_reports/'+encodeURIComponent(f)+'" target="_blank">'+escapeHtml(f)+'</a>');
-                        item.append('<span class="del-att" data-file="'+escapeHtml(f)+'">&times;</span>');
+                        item.append('<span class="del-att" data-file="'+escapeHtml(f)+'" title="حذف المرفق">&times;</span>');
                         container.append(item);
                     });
                 }
             }
         });
     }
+    
+    function renderPendingAttachments(){
+        var container = $('#pendingAttachments').empty();
+        if(pendingFiles.length){
+            container.append('<span class="small" style="color:#666">مرفقات في الانتظار: </span>');
+            pendingFiles.forEach(function(f, i){
+                var item = $('<span class="attachment-item" style="background:#fff3cd"></span>');
+                item.append('<span>'+escapeHtml(f)+'</span>');
+                item.append('<span class="del-pending" data-index="'+i+'" title="إزالة" style="cursor:pointer;color:#d32f2f;margin-right:8px">&times;</span>');
+                container.append(item);
+            });
+        }
+    }
 
     $('#btnUpload').on('click', function(){
         var report_id = $('#report_id').val();
-        if(!report_id){
-            alert('احفظ البلاغ أولاً');
-            return;
-        }
-        
         var files = $('#attachment_file')[0].files;
+        
         if(!files.length){
             alert('اختر ملفاً');
             return;
         }
         
-        var formData = new FormData();
-        formData.append('poison_report_id', report_id);
-        formData.append('file', files[0]);
-        
-        $.ajax({
-            url: API_URL + '?action=upload_attachment',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            dataType: 'json',
-            success: function(res){
-                if(res.status){
-                    showMsg('تم رفع المرفق');
-                    $('#attachment_file').val('');
-                    loadAttachments(report_id);
-                } else {
-                    showMsg(res.message || 'فشل الرفع', false);
+        if(!report_id){
+            // Upload to temp and add to pending
+            var formData = new FormData();
+            formData.append('file', files[0]);
+            
+            $.ajax({
+                url: API_URL + '?action=upload_temp',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(res){
+                    if(res.status){
+                        pendingFiles.push(res.data.filename);
+                        renderPendingAttachments();
+                        showMsg('تم رفع المرفق (سيتم ربطه عند الحفظ)');
+                        $('#attachment_file').val('');
+                    } else {
+                        showMsg(res.message || 'فشل الرفع', false);
+                    }
+                },
+                error: function(){
+                    showMsg('خطأ في رفع الملف', false);
                 }
-            },
-            error: function(){
-                showMsg('خطأ في رفع الملف', false);
-            }
-        });
+            });
+        } else {
+            // Upload directly to report
+            var formData = new FormData();
+            formData.append('poison_report_id', report_id);
+            formData.append('file', files[0]);
+            
+            $.ajax({
+                url: API_URL + '?action=upload_attachment',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(res){
+                    if(res.status){
+                        showMsg('تم رفع المرفق');
+                        $('#attachment_file').val('');
+                        loadAttachments(report_id);
+                    } else {
+                        showMsg(res.message || 'فشل الرفع', false);
+                    }
+                },
+                error: function(){
+                    showMsg('خطأ في رفع الملف', false);
+                }
+            });
+        }
+    });
+    
+    $(document).on('click', '.del-pending', function(){
+        var index = $(this).data('index');
+        // Delete temp file
+        var filename = pendingFiles[index];
+        $.post(API_URL + '?action=delete_temp', {filename: filename});
+        pendingFiles.splice(index, 1);
+        renderPendingAttachments();
     });
 
     $(document).on('click', '.del-att', function(){
-        if(!confirm('هل أنت متأكد من حذف هذا المرفق؟')) return;
         var filename = $(this).data('file');
         var report_id = $('#report_id').val();
+        
+        var choice = confirm('هل تريد حذف المرفق فقط؟\n\nاضغط موافق لحذف المرفق فقط\nأو ألغِ ثم اضغط على "حذف البلاغ" لحذف السجل كاملاً');
+        if(!choice) return;
         
         $.post(API_URL + '?action=delete_attachment', {
             poison_report_id: report_id,
@@ -744,6 +984,7 @@ $(document).ready(function(){
     });
 
     // Initialize
+    loadUserAndEmployees();
     searchReports();
 });
 </script>
