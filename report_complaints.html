@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير متابعة شكوى - نظام الشكاوى</title>
+    <style>
+        :root {
+            --primary: #2a5b2a;
+            --primary-dark: #1a4a1a;
+            --gold: #c4a35a;
+            --gold-dark: #8b7355;
+            --muted: #666;
+            --card: #fafafa;
+            --red: #d32f2f;
+            --green: #388e3c;
+        }
+       
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+       
+        body {
+            font-family: Arial, "Noto Naskh Arabic", sans-serif;
+            direction: rtl;
+            background: #fff;
+            color: #222;
+            padding: 0;
+            margin: 0;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+       
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 5mm;
+        }
+       
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gold);
+            padding-bottom: 2mm;
+            margin-bottom: 3mm;
+        }
+       
+        .logo {
+            max-width: 30mm;
+            max-height: 20mm;
+        }
+       
+        .title {
+            text-align: center;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: bold;
+            flex-grow: 1;
+        }
+       
+        .dept {
+            text-align: left;
+            font-size: 10px;
+            color: var(--primary-dark);
+        }
+       
+        .dept .sub-dept {
+            font-size: 8px;
+            margin-top: 1px;
+        }
+       
+        .card {
+            background: #fff;
+            padding: 2mm;
+            border-radius: 3px;
+            border: 1px solid #eee;
+            margin-bottom: 2mm;
+        }
+       
+        .section-title {
+            color: var(--primary);
+            border-bottom: 1px solid var(--gold);
+            padding-bottom: 1mm;
+            margin: 2mm 0 2mm 0;
+            font-size: 11px;
+            font-weight: bold;
+        }
+       
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2mm;
+            margin-bottom: 2mm;
+        }
+       
+        .col {
+            flex: 1;
+            min-width: 40mm;
+        }
+       
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 1px;
+            font-size: 8px;
+            color: var(--primary-dark);
+        }
+       
+        .value {
+            padding: 1mm;
+            background: #f9f9f9;
+            border-radius: 2px;
+            border: 1px solid #eee;
+            min-height: 6mm;
+            white-space: pre-wrap;
+            font-size: 8px;
+        }
+       
+        .time-ok {
+            color: var(--green);
+            font-weight: bold;
+        }
+       
+        .time-exceeded {
+            color: var(--red);
+            font-weight: bold;
+        }
+       
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+            margin-top: 2mm;
+        }
+       
+        th, td {
+            border: 1px solid #ddd;
+            padding: 1mm 1.5mm;
+            text-align: right;
+        }
+       
+        th {
+            background: var(--primary);
+            color: #fff;
+            font-weight: bold;
+        }
+       
+        .footer-signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5mm;
+            border-top: 1px solid var(--gold);
+            padding-top: 4mm;
+        }
+       
+        .footer-signature {
+            text-align: center;
+            width: 30%;
+        }
+       
+        .footer-signature-box {
+            border: 1px solid #ddd;
+            padding: 2mm;
+            border-radius: 3px;
+            background: #fff;
+            min-height: 15mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+       
+        .footer-signature-name {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 9px;
+            margin-bottom: 1mm;
+        }
+       
+        .footer-signature-date {
+            font-size: 8px;
+            color: var(--muted);
+        }
+       
+        .footer {
+            text-align: center;
+            margin-top: 5mm;
+            font-size: 7px;
+            color: var(--muted);
+        }
+       
+        .loading {
+            text-align: center;
+            padding: 10mm;
+            font-size: 11px;
+            color: var(--muted);
+        }
+       
+        @media print {
+            @page {
+                size: A4;
+                margin: 5mm;
+            }
+           
+            body {
+                padding: 0;
+                margin: 0;
+                background: #fff;
+            }
+           
+            .container {
+                padding: 5mm;
+            }
+           
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="dept">
+                <div>إدارة الرقابة والسلامة الصحية</div>
+                <div class="sub-dept">قسم الرقابة الغذائية</div>
+            </div>
+            <div class="title">تقرير متابعة شكوى</div>
+            <img src="../shjmunlogo.png" alt="شعار بلدية الشارقة" class="logo">
+        </div>
+        <div id="reportContent" style="display: none;">
+            <!-- Complaint details -->
+            <div class="card">
+                <h4 class="section-title">بيانات الشكوى الأساسية</h4>
+                <div class="row">
+                    <div class="col">
+                        <label>رقم الشكوى</label>
+                        <div class="value" id="id"></div>
+                    </div>
+                    <div class="col">
+                        <label>unique_id</label>
+                        <div class="value" id="establishment_unique_id"></div>
+                    </div>
+                    <div class="col">
+                        <label>رقم الرخصة</label>
+                        <div class="value" id="license_no_display"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>اسم المنشأة</label>
+                        <div class="value" id="facility_name"></div>
+                    </div>
+                    <div class="col">
+                        <label>المنطقة</label>
+                        <div class="value" id="area"></div>
+                    </div>
+                    <div class="col">
+                        <label>النشاط</label>
+                        <div class="value" id="activity_type"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>الأنشطة التفصيلية</label>
+                        <div class="value" id="detailed_activities"></div>
+                    </div>
+                    <div class="col">
+                        <label>الوحدة</label>
+                        <div class="value" id="unit"></div>
+                    </div>
+                    <div class="col">
+                        <label>فئة الخطورة</label>
+                        <div class="value" id="hazard_class"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h4 class="section-title">قسم المفتش</h4>
+                <div class="row">
+                    <div class="col">
+                        <label>المفتش</label>
+                        <div class="value" id="inspector_display"></div>
+                    </div>
+                    <div class="col">
+                        <label>تاريخ الاستلام</label>
+                        <div class="value" id="received_datetime"></div>
+                    </div>
+                    <div class="col">
+                        <label>مصدر الشكوى</label>
+                        <div class="value" id="complaints_source"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>اسم الشاكي</label>
+                        <div class="value" id="complainant_name"></div>
+                    </div>
+                    <div class="col">
+                        <label>هاتف الشاكي</label>
+                        <div class="value" id="complainant_phone"></div>
+                    </div>
+                    <div class="col">
+                        <label>رقم شكوى الخط الساخن</label>
+                        <div class="value" id="hotline_complaint_number"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>موضوع الشكوى</label>
+                        <div class="value" id="complaint_subject"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>بيان الشاكي</label>
+                        <div class="value" id="complainant_statement"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>إجراءات المفتش</label>
+                        <div class="value" id="inspector_followup"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>بيان مدير الموقع</label>
+                        <div class="value" id="site_manager_statement"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>حالة العينة</label>
+                        <div class="value" id="sample_status"></div>
+                    </div>
+                    <div class="col">
+                        <label>إجراء تواصل مع الشاكي</label>
+                        <div class="value" id="complainant_contact_action"></div>
+                    </div>
+                    <div class="col">
+                        <label>اشتباه تسمم غذائي</label>
+                        <div class="value" id="food_poisoning_suspect"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>تاريخ استلام المفتش</label>
+                        <div class="value" id="inspector_received_datetime"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>الإجراءات المتخذة</label>
+                        <div class="value" id="taken_actions"></div>
+                    </div>
+                </div>
+               
+                <div class="row" style="margin-top: 2mm;">
+                    <div class="col">
+                        <label>وقت الاستجابة (استلام → مفتش)</label>
+                        <div class="value" id="response_time_display"></div>
+                    </div>
+                    <div class="col">
+                        <label>وقت الإغلاق (مفتش → إغلاق)</label>
+                        <div class="value" id="closure_time_display"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h4 class="section-title">قسم السوبرفايزر</h4>
+                <div class="row">
+                    <div class="col">
+                        <label>المشرف</label>
+                        <div class="value" id="sup_display"></div>
+                    </div>
+                    <div class="col">
+                        <label>تصنيف الشكوى</label>
+                        <div class="value" id="complaint_category"></div>
+                    </div>
+                    <div class="col">
+                        <label>سرعة الاستجابة</label>
+                        <div class="value" id="response_speed"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>تعليق المشرف</label>
+                        <div class="value" id="supervisor_comment"></div>
+                    </div>
+                    <div class="col">
+                        <label>تاريخ متابعة المشرف</label>
+                        <div class="value" id="followup_datetime"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h4 class="section-title">قسم المدير</h4>
+                <div class="row">
+                    <div class="col">
+                        <label>المدير</label>
+                        <div class="value" id="mgr_display"></div>
+                    </div>
+                    <div class="col">
+                        <label>إجراءات القسم</label>
+                        <div class="value" id="section_actions"></div>
+                    </div>
+                    <div class="col">
+                        <label>حالة الشكوى</label>
+                        <div class="value" id="complaint_status"></div>
+                    </div>
+                </div>
+               
+                <div class="row">
+                    <div class="col">
+                        <label>تعليق المدير</label>
+                        <div class="value" id="division_head_comment"></div>
+                    </div>
+                    <div class="col">
+                        <label>تاريخ الإغلاق</label>
+                        <div class="value" id="closed_datetime"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Products section -->
+            <div class="card">
+                <h4 class="section-title">منتجات الشكوى</h4>
+                <div id="productsList"></div>
+            </div>
+            <!-- Footer Signatures -->
+            <div class="footer-signatures">
+                <div class="footer-signature">
+                    <div class="footer-signature-box">
+                        <div class="footer-signature-name" id="inspector_signature_name">توقيع المفتش</div>
+                        <div class="footer-signature-date" id="inspector_signature_date"></div>
+                    </div>
+                </div>
+                <div class="footer-signature">
+                    <div class="footer-signature-box">
+                        <div class="footer-signature-name" id="supervisor_signature_name">توقيع المشرف</div>
+                        <div class="footer-signature-date" id="supervisor_signature_date"></div>
+                    </div>
+                </div>
+                <div class="footer-signature">
+                    <div class="footer-signature-box">
+                        <div class="footer-signature-name" id="manager_signature_name">توقيع المدير</div>
+                        <div class="footer-signature-date" id="manager_signature_date"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Footer -->
+            <div class="footer">
+                <div>تم إنشاء هذا التقرير بواسطة نظام الشكاوى - SFDA</div>
+                <div>لا يُسمح بنسخ أو توزيع هذا التقرير دون إذن رسمي</div>
+            </div>
+        </div>
+       
+        <div id="loadingMessage" class="loading">
+            جاري تحميل بيانات التقرير...
+        </div>
+    </div>
+    <script>
+        // دالة لجلب البيانات من الخادم
+        async function fetchJson(url, opts = {}) {
+            opts.credentials = 'same-origin';
+            try {
+                const r = await fetch(url, opts);
+                const txt = await r.text();
+                try {
+                    return JSON.parse(txt);
+                } catch(e) {
+                    console.warn('Invalid JSON from', url);
+                    return null;
+                }
+            } catch(e) {
+                console.warn('Fetch failed for', url, e);
+                return null;
+            }
+        }
+       
+        // دالة لعرض النص بشكل آمن
+        function escapeHtml(s) {
+            if(!s) return '';
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+       
+        // دالة لتحويل التاريخ إلى التنسيق المحلي
+        function toLocalDateTime(v) {
+            if(!v) return '';
+            return String(v).replace(' ','T').slice(0,16);
+        }
+       
+        // دالة لحساب الفروق الزمنية
+        function calcTimeDiff(startStr, endStr, limitHours) {
+            if(!startStr || !endStr) return { text: '-', exceeded: false };
+           
+            const start = new Date(startStr.replace(' ','T'));
+            const end = new Date(endStr.replace(' ','T'));
+           
+            if(isNaN(start) || isNaN(end)) return { text: '-', exceeded: false };
+           
+            const diffMs = end - start;
+            if(diffMs < 0) return { text: '-', exceeded: false };
+           
+            const diffMins = Math.floor(diffMs / 60000);
+            const hours = Math.floor(diffMins / 60);
+            const mins = diffMins % 60;
+            const exceeded = hours >= limitHours;
+            const status = exceeded ? 'تخطي الحدود' : 'ضمن الحدود';
+           
+            return { text: `${hours} ساعة ${mins} دقيقة (${status})`, exceeded };
+        }
+       
+        // دالة لتحميل بيانات الموظفين
+        let employees = {};
+        async function loadEmployees() {
+            const em = await fetchJson('get_employees.php');
+            if(em && em.success && Array.isArray(em.data)) {
+                employees = {};
+                em.data.forEach(x => {
+                    const name = x.EmpName || x.full_name || x.name || x.displayName;
+                    employees[String(x.EmpID)] = name || String(x.EmpID);
+                });
+            }
+        }
+       
+        // دالة للحصول على اسم الموظف
+        function getName(empid) {
+            if(!empid) return '';
+            return employees[String(empid)] || String(empid);
+        }
+       
+        // دالة لتحميل المنتجات المرتبطة بالشكوى
+        async function loadProductsForReport(cid) {
+            const productsList = document.getElementById('productsList');
+            productsList.innerHTML = '';
+           
+            if(!cid) return;
+           
+            const j = await fetchJson('complaints.php?action=products_list&complaint_id=' + encodeURIComponent(cid));
+            if(!j || !j.success || !j.data || !j.data.length) {
+                productsList.innerHTML = '<div style="text-align: center; padding: 5mm; color: var(--muted);">لا توجد منتجات مرتبطة بهذه الشكوى</div>';
+                return;
+            }
+           
+            let html = '<table><thead><tr>';
+            html += '<th>اسم المنتج</th>';
+            html += '<th>العلامة</th>';
+            html += '<th>نوع العينة</th>';
+            html += '<th>بلد المنشأ</th>';
+            html += '<th>تاريخ الإنتاج</th>';
+            html += '<th>تاريخ الانتهاء</th>';
+            html += '<th>الوزن</th>';
+            html += '<th>رقم الدفعة</th>';
+            html += '<th>نتيجة المختبر</th>';
+            html += '<th>ملاحظات</th>';
+            html += '</tr></thead><tbody>';
+           
+            j.data.forEach(p => {
+                html += '<tr>';
+                html += `<td>${escapeHtml(p.product_name || '')}</td>`;
+                html += `<td>${escapeHtml(p.brand_name || '')}</td>`;
+                html += `<td>${escapeHtml(p.sample_type || '')}</td>`;
+                html += `<td>${escapeHtml(p.country_of_origin || '')}</td>`;
+                html += `<td>${escapeHtml(p.production_date || '')}</td>`;
+                html += `<td>${escapeHtml(p.expiry_date || '')}</td>`;
+                html += `<td>${escapeHtml(p.weight || '')}</td>`;
+                html += `<td>${escapeHtml(p.batch_number || '')}</td>`;
+                html += `<td>${escapeHtml(p.lab_result || '')}</td>`;
+                html += `<td>${escapeHtml(p.notes || '')}</td>`;
+                html += '</tr>';
+            });
+           
+            html += '</tbody></table>';
+            productsList.innerHTML = html;
+        }
+       
+        // الدالة الرئيسية لتحميل التقرير
+        async function loadReport(id) {
+            const j = await fetchJson('complaints.php?action=get&id=' + encodeURIComponent(id));
+            if(!j || !j.success) {
+                document.getElementById('loadingMessage').innerHTML = 'فشل في تحميل بيانات الشكوى. يرجى التأكد من رقم الشكوى.';
+                return;
+            }
+           
+            const c = j.data;
+           
+            // تعبئة بيانات الشكوى الأساسية
+            document.getElementById('id').textContent = c.id || '';
+            document.getElementById('establishment_unique_id').textContent = c.establishment_unique_id || '';
+            document.getElementById('license_no_display').textContent = c.license_no || '';
+            document.getElementById('facility_name').textContent = c.facility_name || '';
+           
+            // جلب بيانات المنشأة الكاملة
+            let est = {};
+            if (c.establishment_unique_id) {
+                const estJson = await fetchJson('get_establishment.php?unique_id=' + encodeURIComponent(c.establishment_unique_id));
+                if (estJson && estJson.success && estJson.data) {
+                    est = estJson.data;
+                }
+            }
+           
+            // تعبئة بيانات المنشأة الإضافية
+            document.getElementById('area').textContent = est.area || '';
+            document.getElementById('activity_type').textContent = est.activity_type || '';
+            document.getElementById('detailed_activities').textContent = est.detailed_activities || '';
+            const unit = est.unit || est.Sub_UNIT || '';
+            document.getElementById('unit').textContent = unit;
+            document.getElementById('hazard_class').textContent = est.hazard_class || '';
+           
+            // تعبئة بيانات قسم المفتش
+            document.getElementById('received_datetime').textContent = c.received_datetime || c.created_at || '';
+            document.getElementById('inspector_received_datetime').textContent = c.inspector_received_datetime || '';
+            document.getElementById('complainant_name').textContent = c.complainant_name || '';
+            document.getElementById('complainant_phone').textContent = c.complainant_phone || '';
+            document.getElementById('hotline_complaint_number').textContent = c.hotline_complaint_number || '';
+            document.getElementById('complaint_subject').textContent = c.complaint_subject || '';
+            document.getElementById('complainant_statement').textContent = c.complainant_statement || '';
+            document.getElementById('inspector_followup').textContent = c.inspector_followup || '';
+            document.getElementById('site_manager_statement').textContent = c.site_manager_statement || '';
+            document.getElementById('taken_actions').textContent = c.taken_actions || '';
+            document.getElementById('complaints_source').textContent = c.complaints_source || '';
+            document.getElementById('sample_status').textContent = c.sample_status || '';
+            document.getElementById('complainant_contact_action').textContent = c.complainant_contact_action || '';
+            document.getElementById('food_poisoning_suspect').textContent = c.food_poisoning_suspect || '';
+           
+            // تعبئة بيانات قسم السوبرفايزر
+            document.getElementById('complaint_category').textContent = c.complaint_category || '';
+            document.getElementById('response_speed').textContent = c.response_speed || '';
+            document.getElementById('supervisor_comment').textContent = c.supervisor_comment || '';
+            document.getElementById('followup_datetime').textContent = c.followup_datetime || '';
+           
+            // تعبئة بيانات قسم المدير
+            document.getElementById('section_actions').textContent = c.section_actions || '';
+            document.getElementById('complaint_status').textContent = c.complaint_status || '';
+            document.getElementById('division_head_comment').textContent = c.division_head_comment || '';
+            document.getElementById('closed_datetime').textContent = c.closed_datetime || '';
+           
+            // تعبئة أسماء الموظفين
+            document.getElementById('inspector_display').textContent = getName(c.created_by_empid) || '-';
+            document.getElementById('sup_display').textContent = getName(c.supervisor_empid) || '-';
+            document.getElementById('mgr_display').textContent = getName(c.manager_empid) || '-';
+           
+            // تعبئة التواقيع
+            document.getElementById('inspector_signature_name').textContent = `توقيع المفتش: ${getName(c.created_by_empid) || '-'}`;
+            document.getElementById('inspector_signature_date').textContent = `التاريخ: ${c.inspector_received_datetime || ''}`;
+           
+            document.getElementById('supervisor_signature_name').textContent = `توقيع المشرف: ${getName(c.supervisor_empid) || '-'}`;
+            document.getElementById('supervisor_signature_date').textContent = `التاريخ: ${c.followup_datetime || ''}`;
+           
+            document.getElementById('manager_signature_name').textContent = `توقيع المدير: ${getName(c.manager_empid) || '-'}`;
+            document.getElementById('manager_signature_date').textContent = `التاريخ: ${c.closed_datetime || ''}`;
+           
+            // حساب وعرض الفروق الزمنية
+            const responseTime = calcTimeDiff(c.received_datetime, c.inspector_received_datetime, 24);
+            const responseTimeDisplay = document.getElementById('response_time_display');
+            responseTimeDisplay.textContent = responseTime.text;
+            responseTimeDisplay.className = responseTime.exceeded ? 'value time-exceeded' : 'value time-ok';
+           
+            const closureTime = calcTimeDiff(c.inspector_received_datetime, c.closed_datetime, 72);
+            const closureTimeDisplay = document.getElementById('closure_time_display');
+            closureTimeDisplay.textContent = closureTime.text;
+            closureTimeDisplay.className = closureTime.exceeded ? 'value time-exceeded' : 'value time-ok';
+           
+            // تحميل المنتجات المرتبطة بالشكوى
+            await loadProductsForReport(c.id);
+           
+            // إخفاء رسالة التحميل وإظهار المحتوى
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('reportContent').style.display = 'block';
+           
+            // طباعة التقرير تلقائياً
+            window.print();
+        }
+       
+        // تهيئة التقرير عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', async function() {
+            // تحميل بيانات الموظفين أولاً
+            await loadEmployees();
+           
+            // الحصول على معرف الشكوى من معلمات URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+           
+            if(id) {
+                await loadReport(id);
+            } else {
+                document.getElementById('loadingMessage').innerHTML = 'يرجى توفير رقم الشكوى في معلمات URL (?id=رقم_الشكوى)';
+            }
+        });
+    </script>
+</body>
+</html>
