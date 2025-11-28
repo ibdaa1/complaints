@@ -393,7 +393,23 @@ function applyPermissions(){
 
 async function loadComplaints(){
   const j = await fetchJson('complaints.php?action=list');
-  if(j && j.success) complaints = j.data || []; else complaints = [];
+  let allComplaints = (j && j.success) ? (j.data || []) : [];
+  
+  // Filter complaints based on user permissions
+  // Regular users can only see their own complaints (created_by_empid)
+  // Admin/SuperAdmin can see all complaints
+  const perms = currentUser.permissions || {};
+  const isAdmin = perms.isAdmin === true;
+  const isSuperAdmin = perms.isSuperAdmin === true;
+  
+  if (!isAdmin && !isSuperAdmin && currentUser.EmpID) {
+    // Regular user: filter to show only their own complaints
+    complaints = allComplaints.filter(c => String(c.created_by_empid) === String(currentUser.EmpID));
+  } else {
+    // Admin/SuperAdmin: show all complaints
+    complaints = allComplaints;
+  }
+  
   $('countNeedSupervisor').textContent = complaints.filter(c=>!c.supervisor_empid).length;
   $('countNeedManager').textContent = complaints.filter(c=>!c.manager_empid).length;
 }
