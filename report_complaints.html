@@ -249,32 +249,89 @@
                         <div class="value" id="license_no_display"></div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- بيانات المنشأة الكاملة -->
+            <div class="card">
+                <h4 class="section-title">بيانات المنشأة</h4>
                 <div class="row">
                     <div class="col">
                         <label>اسم المنشأة</label>
                         <div class="value" id="facility_name"></div>
                     </div>
                     <div class="col">
-                        <label>المنطقة</label>
-                        <div class="value" id="area"></div>
+                        <label>الاسم التجاري</label>
+                        <div class="value" id="brand_name"></div>
                     </div>
                     <div class="col">
-                        <label>النشاط</label>
-                        <div class="value" id="activity_type"></div>
+                        <label>حالة المنشأة</label>
+                        <div class="value" id="facility_status"></div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col">
+                        <label>المنطقة</label>
+                        <div class="value" id="area"></div>
+                    </div>
+                    <div class="col">
+                        <label>المنطقة الفرعية</label>
+                        <div class="value" id="sub_area"></div>
+                    </div>
+                    <div class="col">
+                        <label>المبنى</label>
+                        <div class="value" id="building"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>النشاط</label>
+                        <div class="value" id="activity_type"></div>
+                    </div>
+                    <div class="col">
                         <label>الأنشطة التفصيلية</label>
                         <div class="value" id="detailed_activities"></div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col">
                         <label>الوحدة</label>
                         <div class="value" id="unit"></div>
                     </div>
                     <div class="col">
+                        <label>الوحدة الفرعية</label>
+                        <div class="value" id="sub_unit"></div>
+                    </div>
+                    <div class="col">
                         <label>فئة الخطورة</label>
                         <div class="value" id="hazard_class"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>القطاع</label>
+                        <div class="value" id="sector"></div>
+                    </div>
+                    <div class="col">
+                        <label>القطاع الفرعي</label>
+                        <div class="value" id="sub_sector"></div>
+                    </div>
+                    <div class="col">
+                        <label>SHFHSP</label>
+                        <div class="value" id="shfhsp"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label>هاتف المنشأة</label>
+                        <div class="value" id="est_phone"></div>
+                    </div>
+                    <div class="col">
+                        <label>البريد الإلكتروني</label>
+                        <div class="value" id="est_email"></div>
+                    </div>
+                    <div class="col">
+                        <label>إحداثيات الموقع</label>
+                        <div class="value" id="site_coordinates"></div>
                     </div>
                 </div>
             </div>
@@ -615,12 +672,24 @@
             }
            
             // تعبئة بيانات المنشأة الإضافية
+            document.getElementById('facility_name').textContent = est.facility_name || c.facility_name || '';
+            document.getElementById('brand_name').textContent = est.brand_name || '';
+            document.getElementById('facility_status').textContent = est.facility_status || '';
             document.getElementById('area').textContent = est.area || '';
+            document.getElementById('sub_area').textContent = est.sub_area || '';
+            document.getElementById('building').textContent = est.Building || '';
             document.getElementById('activity_type').textContent = est.activity_type || '';
             document.getElementById('detailed_activities').textContent = est.detailed_activities || '';
-            const unit = est.unit || est.Sub_UNIT || '';
+            const unit = est.unit || '';
             document.getElementById('unit').textContent = unit;
+            document.getElementById('sub_unit').textContent = est.Sub_UNIT || '';
             document.getElementById('hazard_class').textContent = est.hazard_class || '';
+            document.getElementById('sector').textContent = est.Sector || '';
+            document.getElementById('sub_sector').textContent = est.Sub_Sector || '';
+            document.getElementById('shfhsp').textContent = est.shfhsp || '';
+            document.getElementById('est_phone').textContent = est.phone_number || '';
+            document.getElementById('est_email').textContent = est.email || '';
+            document.getElementById('site_coordinates').textContent = est.site_coordinates || '';
            
             // تعبئة بيانات قسم المفتش
             document.getElementById('received_datetime').textContent = c.received_datetime || c.created_at || '';
