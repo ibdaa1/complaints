@@ -195,6 +195,7 @@ tbody tr:hover{background:#f9f9f9}
       <div class="filter-col" style="width:140px"><label>النشاط</label><select id="filter_activity"><option value="">الكل</option></select></div>
       <div class="filter-col" style="width:120px"><label>الوحدة</label><select id="filter_unit"><option value="">الكل</option></select></div>
       <div class="filter-col" style="width:140px"><label>درجة الخطورة</label><select id="filter_hazard"><option value="">الكل</option></select></div>
+      <div class="filter-col" style="width:140px"><label>القطاع الفرعي</label><select id="filter_sub_sector"><option value="">الكل</option></select></div>
       <div class="filter-col" style="width:120px"><label>من تاريخ</label><input id="filter_date_from" type="date"></div>
       <div class="filter-col" style="width:120px"><label>إلى تاريخ</label><input id="filter_date_to" type="date"></div>
       <div style="display:flex;gap:8px;align-items:flex-end"><button id="btnApplyFilters" class="secondary">تطبيق</button><button id="btnResetFilters" class="clear">مسح</button></div>
@@ -351,6 +352,7 @@ function populateFilters(){
   const activities = new Set();
   const units = new Set();
   const hazards = new Set();
+  const subSectors = new Set();
   
   complaints.forEach(c => {
     const est = establishments[c.establishment_unique_id] || {};
@@ -360,6 +362,7 @@ function populateFilters(){
     if(est.unit) units.add(est.unit);
     else if(est.Sub_UNIT) units.add(est.Sub_UNIT);
     if(est.hazard_class) hazards.add(est.hazard_class);
+    if(est.Sub_Sector !== undefined && est.Sub_Sector !== null && est.Sub_Sector !== '') subSectors.add(String(est.Sub_Sector));
   });
   
   const areaEl = $('filter_area');
@@ -377,6 +380,10 @@ function populateFilters(){
   const hazEl = $('filter_hazard');
   hazEl.innerHTML = '<option value="">الكل</option>';
   Array.from(hazards).sort().forEach(v => hazEl.appendChild(new Option(v,v)));
+  
+  const subSectorEl = $('filter_sub_sector');
+  subSectorEl.innerHTML = '<option value="">الكل</option>';
+  Array.from(subSectors).sort((a,b) => Number(a) - Number(b)).forEach(v => subSectorEl.appendChild(new Option(v,v)));
 }
 
 function renderTable(){
@@ -386,6 +393,7 @@ function renderTable(){
   const filterActivity = ($('filter_activity').value || '').trim();
   const filterUnit = ($('filter_unit').value || '').trim();
   const filterHazard = ($('filter_hazard').value || '').trim();
+  const filterSubSector = ($('filter_sub_sector').value || '').trim();
   const dateFrom = $('filter_date_from').value;
   const dateTo = $('filter_date_to').value;
   const needsSup = $('btnNeedsSup').dataset.on === '1';
@@ -401,6 +409,7 @@ function renderTable(){
     if(filterActivity){ const act = est.activity_type || est.detailed_activities || ''; if(act !== filterActivity) return false; }
     if(filterUnit){ const unit = est.unit || est.Sub_UNIT || ''; if(unit !== filterUnit) return false; }
     if(filterHazard && (est.hazard_class || '') !== filterHazard) return false;
+    if(filterSubSector && String(est.Sub_Sector || '') !== filterSubSector) return false;
     const created = (r.created_at || r.received_datetime || '').split(' ')[0];
     if(dateFrom && (!created || created < dateFrom)) return false;
     if(dateTo && (!created || created > dateTo)) return false;
@@ -706,7 +715,8 @@ async function onSearchLicense(){
           <div><strong>المنطقة:</strong> ${escapeHtml(est.area || '-')}</div>
           <div><strong>النشاط:</strong> ${escapeHtml(est.activity_type || est.detailed_activities || '-')}</div>
           <div><strong>الوحدة:</strong> ${escapeHtml(est.unit || est.Sub_UNIT || '-')}</div>
-          <div><strong>درجة الخطورة:</strong> ${escapeHtml(est.hazard_class || '-')}</div>`;
+          <div><strong>درجة الخطورة:</strong> ${escapeHtml(est.hazard_class || '-')}</div>
+          <div><strong>القطاع الفرعي:</strong> ${escapeHtml(String(est.Sub_Sector || '-'))}</div>`;
       }
       const inspections = await fetchLastInspectionAndActions(item.unique_id);
       if(inspections && inspections.length > 0){
@@ -858,7 +868,7 @@ function bindUI(){
   $('btnApplyFilters').addEventListener('click', renderTable);
   $('btnResetFilters').addEventListener('click', function(){
     ['searchAll','filter_phone','filter_date_from','filter_date_to'].forEach(id => { if($(id)) $(id).value = ''; });
-    ['filter_area','filter_activity','filter_unit','filter_hazard'].forEach(id => { if($(id)) $(id).value = ''; });
+    ['filter_area','filter_activity','filter_unit','filter_hazard','filter_sub_sector'].forEach(id => { if($(id)) $(id).value = ''; });
     renderTable();
   });
   ['btnNeedsSup','btnNeedsMgr','btnCompleted','btnNeedsAny'].forEach(id => {
