@@ -654,10 +654,7 @@
             document.getElementById('division_head_comment').textContent = c.division_head_comment || '';
             document.getElementById('closed_datetime').textContent = c.closed_datetime || '';
            
-            // 
-            document.getElementById('inspector_display').textContent = getName(c.created_by_empid) || '-';
-            document.getElementById('sup_display').textContent = getName(c.supervisor_empid) || '-';
-            document.getElementById('mgr_display').textContent = getName(c.manager_empid) || '-';
+            // Employee names are displayed in signature section only
            
             // تعبئة التواقيع
             document.getElementById('inspector_signature_name').textContent = `توقيع المفتش: ${getName(c.created_by_empid) || '-'}`;
