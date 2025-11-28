@@ -47,6 +47,12 @@ if (!is_dir($uploadDir)) {
 // Router
 $action = $_REQUEST['action'] ?? '';
 
+// Ensure temp uploads directory exists
+$tempUploadDir = __DIR__ . '/uploads/poison_reports/temp/';
+if (!is_dir($tempUploadDir)) {
+    @mkdir($tempUploadDir, 0755, true);
+}
+
 // -------------------------
 // Allowed fields for poison_reports (must match DB columns)
 $report_allowed = [
@@ -55,10 +61,11 @@ $report_allowed = [
     'hospital_name','admission_datetime','food_source','facility_unique_id','eating_datetime',
     'samples_entry_datetime','samples_result_datetime','followup_datetime','closed_datetime',
     'consumed_on_site','last_pest_control','suspected_food','total_consumers','total_symptomatic',
-    'meals_72h_summary','patient_samples_taken','patient_samples_results','establishment_samples_taken',
+    'patient_samples_taken','patient_samples_results','establishment_samples_taken',
     'establishment_samples_results','time_between_food_and_symptoms','symptoms','establishment_actions',
-    'production_volume','initial_diagnosis','final_diagnosis','supervisor','final_result',
-    'investigation_recommendations','investigation_team_members','section_head_approval','division_head_approval',
+    'production_volume','initial_diagnosis','final_diagnosis','final_result',
+    'investigation_recommendations','investigation_team_members',
+    'supervisor_empid','section_head_empid','division_head_empid','section_head_datetime',
     'form_number','attachments','notes'
 ];
 // -------------------------
@@ -89,6 +96,13 @@ try {
                 }
             }
 
+            // Handle pending attachments (uploaded before save)
+            $pendingAttachments = [];
+            if (isset($post['pending_attachments']) && $post['pending_attachments'] !== '') {
+                $pendingAttachments = json_decode($post['pending_attachments'], true);
+                if (!is_array($pendingAttachments)) $pendingAttachments = [];
+            }
+
             // set audit fields
             if ($id > 0) {
                 $data['updated_by_empid'] = $empID;
@@ -111,6 +125,27 @@ try {
                 }
                 $sql = "UPDATE `poison_reports` SET ".implode(', ', $sets)." WHERE id = ".intval($id)." LIMIT 1";
                 if ($conn->query($sql)) {
+                    // Move pending attachments from temp
+                    if (!empty($pendingAttachments)) {
+                        $res = $conn->query("SELECT attachments FROM poison_reports WHERE id = ".intval($id)." LIMIT 1");
+                        $existingAtt = [];
+                        if ($res && $row = $res->fetch_assoc()) {
+                            $existingAtt = $row['attachments'] ? json_decode($row['attachments'], true) : [];
+                            if (!is_array($existingAtt)) $existingAtt = [];
+                        }
+                        foreach ($pendingAttachments as $tempFile) {
+                            $tempPath = $tempUploadDir . basename($tempFile);
+                            if (file_exists($tempPath)) {
+                                $newName = 'pr_'.$id.'_'.time().'_'.basename($tempFile);
+                                $newPath = $uploadDir . $newName;
+                                if (rename($tempPath, $newPath)) {
+                                    $existingAtt[] = $newName;
+                                }
+                            }
+                        }
+                        $att_json = $conn->real_escape_string(json_encode(array_values($existingAtt), JSON_UNESCAPED_UNICODE));
+                        $conn->query("UPDATE poison_reports SET attachments = '$att_json' WHERE id = ".intval($id));
+                    }
                     respond(true, 'Report updated', $id);
                 } else {
                     respond(false, 'Update failed: '.$conn->error);
@@ -129,6 +164,26 @@ try {
                 $sql = "INSERT INTO `poison_reports` (".implode(', ', $cols_escaped).") VALUES (".implode(', ', $vals).")";
                 if ($conn->query($sql)) {
                     $newId = $conn->insert_id;
+                    
+                    // Move pending attachments from temp
+                    if (!empty($pendingAttachments)) {
+                        $newAtt = [];
+                        foreach ($pendingAttachments as $tempFile) {
+                            $tempPath = $tempUploadDir . basename($tempFile);
+                            if (file_exists($tempPath)) {
+                                $newName = 'pr_'.$newId.'_'.time().'_'.basename($tempFile);
+                                $newPath = $uploadDir . $newName;
+                                if (rename($tempPath, $newPath)) {
+                                    $newAtt[] = $newName;
+                                }
+                            }
+                        }
+                        if (!empty($newAtt)) {
+                            $att_json = $conn->real_escape_string(json_encode($newAtt, JSON_UNESCAPED_UNICODE));
+                            $conn->query("UPDATE poison_reports SET attachments = '$att_json' WHERE id = ".intval($newId));
+                        }
+                    }
+                    
                     respond(true, 'Report created', $newId);
                 } else {
                     respond(false, 'Insert failed: '.$conn->error);
@@ -190,6 +245,17 @@ try {
             $out = [];
             while ($r = $res->fetch_assoc()) $out[] = $r;
             respond(true, '', $out);
+            break;
+
+        // ----------------- GET SINGLE REPORT -----------------
+        case 'get_report':
+            $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+            if ($id <= 0) return respond(false,'Invalid report ID');
+            $res = $conn->query("SELECT * FROM poison_reports WHERE id = ".intval($id)." LIMIT 1");
+            if (!$res) return respond(false,'Query failed: '.$conn->error);
+            $row = $res->fetch_assoc();
+            if (!$row) return respond(false,'Report not found');
+            respond(true, '', $row);
             break;
 
         // ----------------- CONTACTS CRUD -----------------
@@ -296,10 +362,10 @@ try {
             $file = $_FILES['file'];
             if ($file['error'] !== UPLOAD_ERR_OK) return respond(false,'Upload error code: '.$file['error']);
 
-            // sanitize original name and create unique name
+            // sanitize original name and create unique name (no dots in filename to prevent double extensions)
             $orig = basename($file['name']);
             $ext = pathinfo($orig, PATHINFO_EXTENSION);
-            $safeName = preg_replace('/[^A-Za-z0-9_\-\.]/u','_', pathinfo($orig, PATHINFO_FILENAME));
+            $safeName = preg_replace('/[^A-Za-z0-9_\-]/u','_', pathinfo($orig, PATHINFO_FILENAME));
             $newName = 'pr_'.$report_id.'_'.time().'_'.$safeName.($ext?('.'.$ext):'');
             $dest = $uploadDir . $newName;
 
@@ -324,6 +390,8 @@ try {
             $report_id = isset($_POST['poison_report_id']) ? intval($_POST['poison_report_id']) : 0;
             $filename = isset($_POST['filename']) ? trim($_POST['filename']) : '';
             if ($report_id <= 0 || $filename === '') return respond(false,'Invalid request');
+            // Validate filename - basename already removes directory components
+            $filename = basename($filename);
 
             $res = $conn->query("SELECT attachments FROM poison_reports WHERE id = ".intval($report_id)." LIMIT 1");
             if (!$res) return respond(false,'DB error: '.$conn->error);
@@ -344,6 +412,38 @@ try {
             $filePath = $uploadDir . $filename;
             if (file_exists($filePath)) @unlink($filePath);
             respond(true,'Attachment deleted');
+            break;
+
+        // ----------------- TEMP UPLOAD (before saving report) -----------------
+        case 'upload_temp':
+            if (!$empID) return respond(false,'Unauthorized');
+            if (!isset($_FILES['file'])) return respond(false,'No file uploaded');
+
+            $file = $_FILES['file'];
+            if ($file['error'] !== UPLOAD_ERR_OK) return respond(false,'Upload error code: '.$file['error']);
+
+            // sanitize original name and create unique name
+            $orig = basename($file['name']);
+            $ext = pathinfo($orig, PATHINFO_EXTENSION);
+            $safeName = preg_replace('/[^A-Za-z0-9_\-]/u','_', pathinfo($orig, PATHINFO_FILENAME));
+            $newName = 'temp_'.time().'_'.$safeName.($ext?('.'.$ext):'');
+            $dest = $tempUploadDir . $newName;
+
+            if (!move_uploaded_file($file['tmp_name'], $dest)) return respond(false,'Failed to move uploaded file');
+
+            respond(true,'Temp file uploaded', ['filename'=>$newName, 'path'=>'uploads/poison_reports/temp/'.$newName]);
+            break;
+
+        case 'delete_temp':
+            if (!$empID) return respond(false,'Unauthorized');
+            $filename = isset($_POST['filename']) ? trim($_POST['filename']) : '';
+            if ($filename === '') return respond(false,'Invalid request');
+            // Validate filename - basename already removes directory components
+            $filename = basename($filename);
+            
+            $filePath = $tempUploadDir . $filename;
+            if (file_exists($filePath)) @unlink($filePath);
+            respond(true,'Temp file deleted');
             break;
 
         default:
