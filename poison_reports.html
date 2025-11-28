@@ -968,8 +968,7 @@ $(document).ready(function(){
         var filename = $(this).data('file');
         var report_id = $('#report_id').val();
         
-        var choice = confirm('هل تريد حذف المرفق فقط؟\n\nاضغط موافق لحذف المرفق فقط\nأو ألغِ ثم اضغط على "حذف البلاغ" لحذف السجل كاملاً');
-        if(!choice) return;
+        if(!confirm('هل أنت متأكد من حذف هذا المرفق؟')) return;
         
         $.post(API_URL + '?action=delete_attachment', {
             poison_report_id: report_id,

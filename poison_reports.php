@@ -362,10 +362,10 @@ try {
             $file = $_FILES['file'];
             if ($file['error'] !== UPLOAD_ERR_OK) return respond(false,'Upload error code: '.$file['error']);
 
-            // sanitize original name and create unique name
+            // sanitize original name and create unique name (no dots in filename to prevent double extensions)
             $orig = basename($file['name']);
             $ext = pathinfo($orig, PATHINFO_EXTENSION);
-            $safeName = preg_replace('/[^A-Za-z0-9_\-\.]/u','_', pathinfo($orig, PATHINFO_FILENAME));
+            $safeName = preg_replace('/[^A-Za-z0-9_\-]/u','_', pathinfo($orig, PATHINFO_FILENAME));
             $newName = 'pr_'.$report_id.'_'.time().'_'.$safeName.($ext?('.'.$ext):'');
             $dest = $uploadDir . $newName;
 
@@ -390,11 +390,8 @@ try {
             $report_id = isset($_POST['poison_report_id']) ? intval($_POST['poison_report_id']) : 0;
             $filename = isset($_POST['filename']) ? trim($_POST['filename']) : '';
             if ($report_id <= 0 || $filename === '') return respond(false,'Invalid request');
-            // Validate filename to prevent path traversal
+            // Validate filename - basename already removes directory components
             $filename = basename($filename);
-            if (strpos($filename, '..') !== false || strpos($filename, '/') !== false || strpos($filename, '\\') !== false) {
-                return respond(false,'Invalid filename');
-            }
 
             $res = $conn->query("SELECT attachments FROM poison_reports WHERE id = ".intval($report_id)." LIMIT 1");
             if (!$res) return respond(false,'DB error: '.$conn->error);
@@ -428,7 +425,7 @@ try {
             // sanitize original name and create unique name
             $orig = basename($file['name']);
             $ext = pathinfo($orig, PATHINFO_EXTENSION);
-            $safeName = preg_replace('/[^A-Za-z0-9_\-\.]/u','_', pathinfo($orig, PATHINFO_FILENAME));
+            $safeName = preg_replace('/[^A-Za-z0-9_\-]/u','_', pathinfo($orig, PATHINFO_FILENAME));
             $newName = 'temp_'.time().'_'.$safeName.($ext?('.'.$ext):'');
             $dest = $tempUploadDir . $newName;
 
@@ -441,11 +438,8 @@ try {
             if (!$empID) return respond(false,'Unauthorized');
             $filename = isset($_POST['filename']) ? trim($_POST['filename']) : '';
             if ($filename === '') return respond(false,'Invalid request');
-            // Validate filename to prevent path traversal
+            // Validate filename - basename already removes directory components
             $filename = basename($filename);
-            if (strpos($filename, '..') !== false || strpos($filename, '/') !== false || strpos($filename, '\\') !== false) {
-                return respond(false,'Invalid filename');
-            }
             
             $filePath = $tempUploadDir . $filename;
             if (file_exists($filePath)) @unlink($filePath);
