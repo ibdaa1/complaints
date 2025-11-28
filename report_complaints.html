@@ -251,7 +251,7 @@
                 </div>
             </div>
             
-            <!-- بيانات المنشأة الكاملة -->
+            <!-- بيانات المنشأة -->
             <div class="card">
                 <h4 class="section-title">بيانات المنشأة</h4>
                 <div class="row">
@@ -260,46 +260,22 @@
                         <div class="value" id="facility_name"></div>
                     </div>
                     <div class="col">
-                        <label>الاسم التجاري</label>
-                        <div class="value" id="brand_name"></div>
-                    </div>
-                    <div class="col">
-                        <label>حالة المنشأة</label>
-                        <div class="value" id="facility_status"></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
                         <label>المنطقة</label>
                         <div class="value" id="area"></div>
                     </div>
                     <div class="col">
-                        <label>المنطقة الفرعية</label>
-                        <div class="value" id="sub_area"></div>
-                    </div>
-                    <div class="col">
-                        <label>المبنى</label>
-                        <div class="value" id="building"></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col">
                         <label>النشاط</label>
                         <div class="value" id="activity_type"></div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col">
                         <label>الأنشطة التفصيلية</label>
                         <div class="value" id="detailed_activities"></div>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col">
                         <label>الوحدة</label>
                         <div class="value" id="unit"></div>
-                    </div>
-                    <div class="col">
-                        <label>الوحدة الفرعية</label>
-                        <div class="value" id="sub_unit"></div>
                     </div>
                     <div class="col">
                         <label>فئة الخطورة</label>
@@ -307,10 +283,6 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col">
-                        <label>القطاع</label>
-                        <div class="value" id="sector"></div>
-                    </div>
                     <div class="col">
                         <label>القطاع الفرعي</label>
                         <div class="value" id="sub_sector"></div>
@@ -320,28 +292,10 @@
                         <div class="value" id="shfhsp"></div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        <label>هاتف المنشأة</label>
-                        <div class="value" id="est_phone"></div>
-                    </div>
-                    <div class="col">
-                        <label>البريد الإلكتروني</label>
-                        <div class="value" id="est_email"></div>
-                    </div>
-                    <div class="col">
-                        <label>إحداثيات الموقع</label>
-                        <div class="value" id="site_coordinates"></div>
-                    </div>
-                </div>
             </div>
             <div class="card">
                 <h4 class="section-title">قسم المفتش</h4>
                 <div class="row">
-                    <div class="col">
-                        <label>المفتش</label>
-                        <div class="value" id="inspector_display"></div>
-                    </div>
                     <div class="col">
                         <label>تاريخ الاستلام</label>
                         <div class="value" id="received_datetime"></div>
@@ -436,12 +390,8 @@
                 </div>
             </div>
             <div class="card">
-                <h4 class="section-title">قسم السوبرفايزر</h4>
+                <h4 class="section-title">قسم مسؤول المناوبة</h4>
                 <div class="row">
-                    <div class="col">
-                        <label>المشرف</label>
-                        <div class="value" id="sup_display"></div>
-                    </div>
                     <div class="col">
                         <label>تصنيف الشكوى</label>
                         <div class="value" id="complaint_category"></div>
@@ -454,22 +404,18 @@
                
                 <div class="row">
                     <div class="col">
-                        <label>تعليق المشرف</label>
+                        <label>تعليق مسؤول المناوبة</label>
                         <div class="value" id="supervisor_comment"></div>
                     </div>
                     <div class="col">
-                        <label>تاريخ متابعة المشرف</label>
+                        <label>تاريخ المتابعة</label>
                         <div class="value" id="followup_datetime"></div>
                     </div>
                 </div>
             </div>
             <div class="card">
-                <h4 class="section-title">قسم المدير</h4>
+                <h4 class="section-title">قسم المسؤول</h4>
                 <div class="row">
-                    <div class="col">
-                        <label>المدير</label>
-                        <div class="value" id="mgr_display"></div>
-                    </div>
                     <div class="col">
                         <label>إجراءات القسم</label>
                         <div class="value" id="section_actions"></div>
@@ -482,7 +428,7 @@
                
                 <div class="row">
                     <div class="col">
-                        <label>تعليق المدير</label>
+                        <label>تعليق المسؤول</label>
                         <div class="value" id="division_head_comment"></div>
                     </div>
                     <div class="col">
@@ -506,21 +452,16 @@
                 </div>
                 <div class="footer-signature">
                     <div class="footer-signature-box">
-                        <div class="footer-signature-name" id="supervisor_signature_name">توقيع المشرف</div>
+                        <div class="footer-signature-name" id="supervisor_signature_name">توقيع مسؤول المناوبة</div>
                         <div class="footer-signature-date" id="supervisor_signature_date"></div>
                     </div>
                 </div>
                 <div class="footer-signature">
                     <div class="footer-signature-box">
-                        <div class="footer-signature-name" id="manager_signature_name">توقيع المدير</div>
+                        <div class="footer-signature-name" id="manager_signature_name">توقيع المسؤول</div>
                         <div class="footer-signature-date" id="manager_signature_date"></div>
                     </div>
                 </div>
-            </div>
-            <!-- Footer -->
-            <div class="footer">
-                <div>تم إنشاء هذا التقرير بواسطة نظام الشكاوى - SFDA</div>
-                <div>لا يُسمح بنسخ أو توزيع هذا التقرير دون إذن رسمي</div>
             </div>
         </div>
        
@@ -673,23 +614,17 @@
            
             // تعبئة بيانات المنشأة الإضافية
             document.getElementById('facility_name').textContent = est.facility_name || c.facility_name || '';
-            document.getElementById('brand_name').textContent = est.brand_name || '';
-            document.getElementById('facility_status').textContent = est.facility_status || '';
             document.getElementById('area').textContent = est.area || '';
-            document.getElementById('sub_area').textContent = est.sub_area || '';
-            document.getElementById('building').textContent = est.Building || '';
             document.getElementById('activity_type').textContent = est.activity_type || '';
             document.getElementById('detailed_activities').textContent = est.detailed_activities || '';
             const unit = est.unit || '';
             document.getElementById('unit').textContent = unit;
-            document.getElementById('sub_unit').textContent = est.Sub_UNIT || '';
             document.getElementById('hazard_class').textContent = est.hazard_class || '';
-            document.getElementById('sector').textContent = est.Sector || '';
             document.getElementById('sub_sector').textContent = est.Sub_Sector || '';
             document.getElementById('shfhsp').textContent = est.shfhsp || '';
-            document.getElementById('est_phone').textContent = est.phone_number || '';
-            document.getElementById('est_email').textContent = est.email || '';
-            document.getElementById('site_coordinates').textContent = est.site_coordinates || '';
+            
+            // تعبئة رقم الرخصة من بيانات المنشأة
+            document.getElementById('license_no_display').textContent = est.license_no || c.license_no || '';
            
             // تعبئة بيانات قسم المفتش
             document.getElementById('received_datetime').textContent = c.received_datetime || c.created_at || '';
@@ -707,19 +642,19 @@
             document.getElementById('complainant_contact_action').textContent = c.complainant_contact_action || '';
             document.getElementById('food_poisoning_suspect').textContent = c.food_poisoning_suspect || '';
            
-            // تعبئة بيانات قسم السوبرفايزر
+            // تعبئة بيانات قسم مسؤول المناوبة
             document.getElementById('complaint_category').textContent = c.complaint_category || '';
             document.getElementById('response_speed').textContent = c.response_speed || '';
             document.getElementById('supervisor_comment').textContent = c.supervisor_comment || '';
             document.getElementById('followup_datetime').textContent = c.followup_datetime || '';
            
-            // تعبئة بيانات قسم المدير
+            // تعبئة بيانات قسم المسؤول
             document.getElementById('section_actions').textContent = c.section_actions || '';
             document.getElementById('complaint_status').textContent = c.complaint_status || '';
             document.getElementById('division_head_comment').textContent = c.division_head_comment || '';
             document.getElementById('closed_datetime').textContent = c.closed_datetime || '';
            
-            // تعبئة أسماء الموظفين
+            // 
             document.getElementById('inspector_display').textContent = getName(c.created_by_empid) || '-';
             document.getElementById('sup_display').textContent = getName(c.supervisor_empid) || '-';
             document.getElementById('mgr_display').textContent = getName(c.manager_empid) || '-';
@@ -728,10 +663,10 @@
             document.getElementById('inspector_signature_name').textContent = `توقيع المفتش: ${getName(c.created_by_empid) || '-'}`;
             document.getElementById('inspector_signature_date').textContent = `التاريخ: ${c.inspector_received_datetime || ''}`;
            
-            document.getElementById('supervisor_signature_name').textContent = `توقيع المشرف: ${getName(c.supervisor_empid) || '-'}`;
+            document.getElementById('supervisor_signature_name').textContent = `توقيع مسؤول المناوبة: ${getName(c.supervisor_empid) || '-'}`;
             document.getElementById('supervisor_signature_date').textContent = `التاريخ: ${c.followup_datetime || ''}`;
            
-            document.getElementById('manager_signature_name').textContent = `توقيع المدير: ${getName(c.manager_empid) || '-'}`;
+            document.getElementById('manager_signature_name').textContent = `توقيع المسؤول: ${getName(c.manager_empid) || '-'}`;
             document.getElementById('manager_signature_date').textContent = `التاريخ: ${c.closed_datetime || ''}`;
            
             // حساب وعرض الفروق الزمنية
