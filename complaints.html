@@ -109,12 +109,6 @@ tbody tr:hover{background:#f9f9f9}
         <div class="col"><label>رقم شكوى الخط الساخن</label><input id="hotline_complaint_number"></div>
       </div>
 
-      <div class="row">
-        <div class="col"><label>حالة الشكوى</label><select id="complaint_status"></select></div>
-        <div class="col"><label>تصنيف الشكوى</label><select id="complaint_category"></select></div>
-        <div class="col"><label>سرعة الاستجابة</label><select id="response_speed"></select></div>
-      </div>
-
       <label>موضوع الشكوى</label><textarea id="complaint_subject"></textarea>
       <label>بيان الشاكي</label><textarea id="complainant_statement"></textarea>
       <label>إجراءات المفتش</label><textarea id="inspector_followup"></textarea>
@@ -150,7 +144,11 @@ tbody tr:hover{background:#f9f9f9}
       <h4 style="margin:12px 0 8px 0">قسم السوبرفايزر</h4>
       <div class="row">
         <div class="col"><label>المشرف</label><span id="sup_display" class="display-name">-</span><input type="hidden" id="supervisor_empid"></div>
-        <div class="col"><label>تعليق المشرف</label><textarea id="supervisor_comment"></textarea></div>
+        <div class="col"><label>تصنيف الشكوى</label><select id="complaint_category" class="supervisor-field"></select></div>
+        <div class="col"><label>سرعة الاستجابة</label><input id="response_speed" readonly class="supervisor-field"></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>تعليق المشرف</label><textarea id="supervisor_comment" class="supervisor-field"></textarea></div>
         <div class="col"><label>تاريخ متابعة المشرف</label><input id="followup_datetime" type="datetime-local" readonly></div>
       </div>
       <div style="margin-top:8px">
@@ -161,8 +159,11 @@ tbody tr:hover{background:#f9f9f9}
       <h4 style="margin:12px 0 8px 0">قسم المدير</h4>
       <div class="row">
         <div class="col"><label>المدير</label><span id="mgr_display" class="display-name">-</span><input type="hidden" id="manager_empid"></div>
-        <div class="col"><label>تعليق المدير</label><textarea id="division_head_comment"></textarea></div>
+        <div class="col"><label>حالة الشكوى (المدير)</label><select id="complaint_status" class="manager-field"></select></div>
         <div class="col"><label>تاريخ الإغلاق</label><input id="closed_datetime" type="datetime-local" readonly></div>
+      </div>
+      <div class="row">
+        <div class="col"><label>تعليق المدير</label><textarea id="division_head_comment" class="manager-field"></textarea></div>
       </div>
       <div style="margin-top:8px">
         <button id="btnSaveManager" class="secondary" type="button">توقيع المدير</button>
@@ -249,13 +250,38 @@ let complaints = [];
 let establishments = {};
 let lastInspections = {};
 
-const complaintSources = ["الخط الساخن","الايميل","شخصياً بالمكتب","الادارة"];
-const sampleStatusOptions = ["موجودة","غير موجودة","تم ارسال صورها بالالهاتف","تم اتلافها بواسطة الشاكى","تم ارجاعها للموقع","تم احضار العينة للقسم","لا يوجد عينة للشكوى"];
+// Lists matching complaintData.js
+const complaintSources = ["الخط الساخن","الايميل","شخصياً بالمكتب","الادارة","رسالة نصية","تطبيق الهاتف"];
+const sampleStatusOptions = ["موجودة","غير موجودة","تم ارسال صورها بالهاتف","تم اتلافها بواسطة الشاكى","تم ارجاعها للموقع","تم احضار العينة للقسم","لا يوجد عينة للشكوى"];
 const complainantContactActions = ["تم مقابلة الشاكى واستلام العينة","تم مقابلة الشاكى ولم يحضر العينة","تم الاتصال بالشاكى ولم يحضر العينة","تم ارسال صور العينة عبر تطبيق الرسائل","تم الاتصال بالشاكى واخذ افادته","تم الاتصال بالشاكى ولم يجيب على الهاتف","تم مقابلة الشاكى واخذ افادته شفهياً"];
 const complaintStatusOptions = ['','حفظ','قيد الاجراء','مخالفة','تم الإغلاق','التحويل الى جهة الاختصاص','اخذ عينة','انذار'];
 const complaintCategories = ["","النظافة العامة","المبانى والمنشات","طرق اعداد وحفظ","الغش التجارى","الحشرات والقوارض","المخالفات العامة","مخالفات سوق الخضار والسمك","مخالفات قسم البيطرة","اشتباة تسمم غذائى","شكوى تحتاج الى الاشتراك مع جهات اخرى","اشتباة تسمم غذائى بدون تقرير مستشفى","إجراءات احترازية"];
-const responseSpeedOptions = ["","سريع","متوسط","بطيء"];
-const foodPoisoningSuspectOptions = ["","نعم","لا","غير محدد"];
+const foodPoisoningSuspects = ["","داخل الامارة","خارج الامارة","منزلى","لا يوجد"];
+
+// Calculate response speed based on category (from complaintData.js)
+function complaintUrgency(category) {
+  if (!category) return "غير محددة";
+  switch(category) {
+    case "النظافة العامة":
+    case "طرق اعداد وحفظ":
+    case "الغش التجارى":
+    case "الحشرات والقوارض":
+    case "المخالفات العامة":
+    case "مخالفات سوق الخضار والسمك":
+    case "مخالفات قسم البيطرة":
+    case "اشتباة تسمم غذائى بدون تقرير مستشفى":
+      return "عاجلة خلال يوم عمل واحد";
+    case "المبانى والمنشات":
+      return "عادية خلال خمس أيام عمل";
+    case "اشتباة تسمم غذائى":
+    case "إجراءات احترازية":
+      return "طارئة استجابة فورية";
+    case "شكوى تحتاج الى الاشتراك مع جهات اخرى":
+      return "معقدة خلال فترة غير محددة";
+    default:
+      return "غير محددة";
+  }
+}
 
 function toLocalDateTime(v){ if(!v) return ''; return String(v).replace(' ','T').slice(0,16); }
 function toDBDateTimeFromLocal(v){ if(!v) return ''; const d = new Date(v); if(isNaN(d)) return ''; return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
@@ -313,6 +339,31 @@ async function loadUserAndEmployees(){
       $('inspector_display').textContent = employees[String(currentUser.EmpID)] || currentUser.EmpName || '-';
     }
   }
+  // Apply permissions-based field enabling/disabling
+  applyPermissions();
+}
+
+// Apply permission-based enabling/disabling of fields
+function applyPermissions(){
+  const perms = currentUser.permissions || {};
+  const isAdmin = perms.isAdmin === true;
+  const isSuperAdmin = perms.isSuperAdmin === true;
+  
+  // Supervisor fields (complaint_category, response_speed, supervisor_comment) - enabled for admin/super admin
+  const canSignSupervisor = isAdmin || isSuperAdmin;
+  document.querySelectorAll('.supervisor-field').forEach(el => {
+    el.disabled = !canSignSupervisor;
+  });
+  if($('btnSaveSupervisor')) $('btnSaveSupervisor').disabled = !canSignSupervisor;
+  if($('btnSupervisorClear')) $('btnSupervisorClear').disabled = !canSignSupervisor;
+  
+  // Manager fields (complaint_status, division_head_comment) - enabled for super admin only
+  const canSignManager = isSuperAdmin;
+  document.querySelectorAll('.manager-field').forEach(el => {
+    el.disabled = !canSignManager;
+  });
+  if($('btnSaveManager')) $('btnSaveManager').disabled = !canSignManager;
+  if($('btnManagerClear')) $('btnManagerClear').disabled = !canSignManager;
 }
 
 async function loadComplaints(){
@@ -625,11 +676,27 @@ async function onSaveComplaint(){
 async function onSupervisorSign(){
   const id = $('id').value;
   if(!id){ alert('افتح الشكوى أولاً'); return; }
+  
+  // Check permission - only admin or super admin can sign as supervisor
+  const perms = currentUser.permissions || {};
+  if(!perms.isAdmin && !perms.isSuperAdmin){
+    alert('ليس لديك صلاحية توقيع السوبرفايزر');
+    return;
+  }
+  
   const ud = await fetchJson('user_data.php');
   if(!ud || !ud.success || !ud.user_data || !ud.user_data.EmpID){ alert('غير مسجل'); return; }
   const emp = ud.user_data.EmpID;
   const followup = formatDateInTimeZone(new Date(), 'Asia/Dubai');
-  const params = new URLSearchParams({ action: 'update', id, supervisor_empid: emp, supervisor_comment: $('supervisor_comment').value || '', followup_datetime: followup });
+  const params = new URLSearchParams({ 
+    action: 'update', 
+    id, 
+    supervisor_empid: emp, 
+    supervisor_comment: $('supervisor_comment').value || '',
+    complaint_category: $('complaint_category').value || '',
+    response_speed: $('response_speed').value || '',
+    followup_datetime: followup 
+  });
   try {
     const res = await fetch('complaints.php', { method:'POST', body: params, credentials:'same-origin' });
     const j = await res.json();
@@ -660,6 +727,14 @@ async function onSupervisorClear(){
 async function onManagerSign(){
   const id = $('id').value;
   if(!id){ alert('افتح الشكوى أولاً'); return; }
+  
+  // Check permission - only super admin can sign as manager
+  const perms = currentUser.permissions || {};
+  if(!perms.isSuperAdmin){
+    alert('ليس لديك صلاحية توقيع المدير - يتطلب صلاحية سوبر أدمن');
+    return;
+  }
+  
   const ud = await fetchJson('user_data.php');
   if(!ud || !ud.success || !ud.user_data || !ud.user_data.EmpID){ alert('غير مسجل'); return; }
   const emp = ud.user_data.EmpID;
@@ -679,6 +754,14 @@ async function onManagerSign(){
 async function onManagerClear(){
   const id = $('id').value;
   if(!id){ alert('افتح الشكوى'); return; }
+  
+  // Check permission - only super admin can clear manager signature
+  const perms = currentUser.permissions || {};
+  if(!perms.isSuperAdmin){
+    alert('ليس لديك صلاحية حذف توقيع المدير');
+    return;
+  }
+  
   if(!confirm('حذف توقيع المدير؟')) return;
   const params = new URLSearchParams({ action: 'update', id, manager_empid: '', division_head_comment: '', complaint_status: '', closed_datetime: '' });
   try {
@@ -927,16 +1010,23 @@ function bindUI(){
   $('btnAddProduct').addEventListener('click', function(){ addProductRow(true); });
   $('btnSaveProducts').addEventListener('click', saveProductsBulk);
   $('btnUpload').addEventListener('click', onUploadAttachment);
+  
+  // Auto-compute response_speed when complaint_category changes
+  if($('complaint_category')) {
+    $('complaint_category').addEventListener('change', function(){
+      const speed = complaintUrgency(this.value);
+      if($('response_speed')) $('response_speed').value = speed;
+    });
+  }
 }
 
 async function init(){
-  populateSelect('complaints_source', complaintSources, true, '--');
-  populateSelect('sample_status', sampleStatusOptions, true, '--');
-  populateSelect('complainant_contact_action', complainantContactActions, true, '--');
-  populateSelect('complaint_status', complaintStatusOptions, true, '--');
-  populateSelect('complaint_category', complaintCategories, true, '--');
-  populateSelect('response_speed', responseSpeedOptions, true, '--');
-  populateSelect('food_poisoning_suspect', foodPoisoningSuspectOptions, true, '--');
+  populateSelect('complaints_source', complaintSources, true, '-- اختر --');
+  populateSelect('sample_status', sampleStatusOptions, true, '-- اختر --');
+  populateSelect('complainant_contact_action', complainantContactActions, true, '-- اختر --');
+  populateSelect('complaint_status', complaintStatusOptions, true, '-- اختر حالة --');
+  populateSelect('complaint_category', complaintCategories, true, '-- اختر تصنيف --');
+  populateSelect('food_poisoning_suspect', foodPoisoningSuspects, true, '-- اختر --');
   bindUI();
   await loadUserAndEmployees();
   await loadComplaints();
@@ -951,5 +1041,6 @@ init();
 
 })();
 </script>
+<script src="complaintResponse.js"></script>
 </body>
 </html>
