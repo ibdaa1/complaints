@@ -335,6 +335,11 @@ try {
             $report_id = isset($_POST['poison_report_id']) ? intval($_POST['poison_report_id']) : 0;
             $filename = isset($_POST['filename']) ? trim($_POST['filename']) : '';
             if ($report_id <= 0 || $filename === '') return respond(false,'Invalid request');
+            // Validate filename to prevent path traversal
+            $filename = basename($filename);
+            if (strpos($filename, '..') !== false || strpos($filename, '/') !== false || strpos($filename, '\\') !== false) {
+                return respond(false,'Invalid filename');
+            }
 
             $res = $conn->query("SELECT attachments FROM poison_reports WHERE id = ".intval($report_id)." LIMIT 1");
             if (!$res) return respond(false,'DB error: '.$conn->error);
