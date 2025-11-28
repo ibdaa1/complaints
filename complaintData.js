@@ -76,6 +76,46 @@ const foodPoisoningSuspects = [
 ];
 
 /**
+ * 5.1) إجراءات القسم - صلاحية المدير والسوبر أدمن
+ */
+const sectionActionsOptions = [
+  "حفظ",
+  "مخالفة",
+  "تحفظ",
+  "اخذ عينة",
+  "انذار",
+  "متابعة من المفتش",
+  "التحويل الى جهة الاختصاص",
+];
+
+/**
+ * 5.2) دالة تحديد حالة الشكوى تلقائياً بناءً على إجراءات القسم
+ *      - حفظ → الشكوى غير صحيحة
+ *      - مخالفة → الشكوى صحيحة
+ *      - تحفظ, اخذ عينة, انذار, متابعة من المفتش → الشكوى قيد الاجراء
+ *      - التحويل الى جهة الاختصاص → تم تحويل الشكوى الى جهة الاختصاص
+ */
+function derivedComplaintStatus(sectionAction) {
+  if (!sectionAction || typeof sectionAction !== 'string') return '';
+  const action = sectionAction.trim();
+  switch (action) {
+    case "حفظ":
+      return "الشكوى غير صحيحة";
+    case "مخالفة":
+      return "الشكوى صحيحة";
+    case "تحفظ":
+    case "اخذ عينة":
+    case "انذار":
+    case "متابعة من المفتش":
+      return "الشكوى قيد الاجراء";
+    case "التحويل الى جهة الاختصاص":
+      return "تم تحويل الشكوى الى جهة الاختصاص";
+    default:
+      return '';
+  }
+}
+
+/**
  * 6) دالة حساب سرعة الاستجابة (أولوية) بناءً على الفئة
  *    ترجع نصاً مختصراً يوضّح الإجراء المتوقع.
  */
@@ -218,9 +258,11 @@ export {
   complainantContactActions,
   complaintCategories,
   foodPoisoningSuspects,
+  sectionActionsOptions,
   // functions
   complaintUrgency,
   complaintStatusLabel,
+  derivedComplaintStatus,
   populateSelect,
   createOption,
   isValidCategory,

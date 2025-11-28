@@ -124,7 +124,9 @@ tbody tr:hover{background:#f9f9f9}
         <div class="col"><label>تاريخ استلام المفتش</label><input id="inspector_received_datetime" type="datetime-local"></div>
       </div>
 
-      <label>إجراءات القسم</label><textarea id="section_actions"></textarea>
+      <div class="row">
+        <div class="col"><label>إجراءات القسم (صلاحية المدير)</label><select id="section_actions" class="manager-field"></select></div>
+      </div>
       <label>الإجراءات المتخذة</label><textarea id="taken_actions"></textarea>
 
       <!-- Time difference display -->
@@ -254,9 +256,32 @@ let lastInspections = {};
 const complaintSources = ["الخط الساخن","الايميل","شخصياً بالمكتب","الادارة","رسالة نصية","تطبيق الهاتف"];
 const sampleStatusOptions = ["موجودة","غير موجودة","تم ارسال صورها بالهاتف","تم اتلافها بواسطة الشاكى","تم ارجاعها للموقع","تم احضار العينة للقسم","لا يوجد عينة للشكوى"];
 const complainantContactActions = ["تم مقابلة الشاكى واستلام العينة","تم مقابلة الشاكى ولم يحضر العينة","تم الاتصال بالشاكى ولم يحضر العينة","تم ارسال صور العينة عبر تطبيق الرسائل","تم الاتصال بالشاكى واخذ افادته","تم الاتصال بالشاكى ولم يجيب على الهاتف","تم مقابلة الشاكى واخذ افادته شفهياً"];
-const complaintStatusOptions = ['','حفظ','قيد الاجراء','مخالفة','تم الإغلاق','التحويل الى جهة الاختصاص','اخذ عينة','انذار'];
+// حالة الشكوى - الحالات النهائية المشتقة
+const complaintStatusOptions = ["","الشكوى غير صحيحة","الشكوى صحيحة","الشكوى قيد الاجراء","تم تحويل الشكوى الى جهة الاختصاص"];
 const complaintCategories = ["","النظافة العامة","المبانى والمنشات","طرق اعداد وحفظ","الغش التجارى","الحشرات والقوارض","المخالفات العامة","مخالفات سوق الخضار والسمك","مخالفات قسم البيطرة","اشتباة تسمم غذائى","شكوى تحتاج الى الاشتراك مع جهات اخرى","اشتباة تسمم غذائى بدون تقرير مستشفى","إجراءات احترازية"];
 const foodPoisoningSuspects = ["","داخل الامارة","خارج الامارة","منزلى","لا يوجد"];
+// إجراءات القسم - صلاحية المدير والسوبر أدمن
+const sectionActionsOptions = ["","حفظ","مخالفة","تحفظ","اخذ عينة","انذار","متابعة من المفتش","التحويل الى جهة الاختصاص"];
+
+// دالة تحديد حالة الشكوى تلقائياً بناءً على إجراءات القسم
+function derivedComplaintStatus(sectionAction) {
+  if (!sectionAction) return '';
+  switch(sectionAction) {
+    case "حفظ":
+      return "الشكوى غير صحيحة";
+    case "مخالفة":
+      return "الشكوى صحيحة";
+    case "تحفظ":
+    case "اخذ عينة":
+    case "انذار":
+    case "متابعة من المفتش":
+      return "الشكوى قيد الاجراء";
+    case "التحويل الى جهة الاختصاص":
+      return "تم تحويل الشكوى الى جهة الاختصاص";
+    default:
+      return '';
+  }
+}
 
 // Calculate response speed based on category (from complaintData.js)
 function complaintUrgency(category) {
@@ -357,7 +382,7 @@ function applyPermissions(){
   if($('btnSaveSupervisor')) $('btnSaveSupervisor').disabled = !canSignSupervisor;
   if($('btnSupervisorClear')) $('btnSupervisorClear').disabled = !canSignSupervisor;
   
-  // Manager fields (complaint_status, division_head_comment) - enabled for super admin only
+  // Manager fields (section_actions, complaint_status, division_head_comment) - enabled for super admin only
   const canSignManager = isSuperAdmin;
   document.querySelectorAll('.manager-field').forEach(el => {
     el.disabled = !canSignManager;
@@ -1018,6 +1043,14 @@ function bindUI(){
       if($('response_speed')) $('response_speed').value = speed;
     });
   }
+  
+  // Auto-compute complaint_status when section_actions changes
+  if($('section_actions')) {
+    $('section_actions').addEventListener('change', function(){
+      const status = derivedComplaintStatus(this.value);
+      if($('complaint_status') && status) $('complaint_status').value = status;
+    });
+  }
 }
 
 async function init(){
@@ -1027,6 +1060,7 @@ async function init(){
   populateSelect('complaint_status', complaintStatusOptions, true, '-- اختر حالة --');
   populateSelect('complaint_category', complaintCategories, true, '-- اختر تصنيف --');
   populateSelect('food_poisoning_suspect', foodPoisoningSuspects, true, '-- اختر --');
+  populateSelect('section_actions', sectionActionsOptions, true, '-- اختر إجراء --');
   bindUI();
   await loadUserAndEmployees();
   await loadComplaints();

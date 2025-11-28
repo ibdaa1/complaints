@@ -117,6 +117,40 @@
     });
   }
 
+  // ========================================
+  // دالة تحديد حالة الشكوى تلقائياً بناءً على إجراءات القسم
+  // ========================================
+  function derivedComplaintStatus(sectionAction) {
+    if (!sectionAction) return '';
+    switch(sectionAction) {
+      case "حفظ":
+        return "الشكوى غير صحيحة";
+      case "مخالفة":
+        return "الشكوى صحيحة";
+      case "تحفظ":
+      case "اخذ عينة":
+      case "انذار":
+      case "متابعة من المفتش":
+        return "الشكوى قيد الاجراء";
+      case "التحويل الى جهة الاختصاص":
+        return "تم تحويل الشكوى الى جهة الاختصاص";
+      default:
+        return '';
+    }
+  }
+
+  // حدث تغيير إجراءات القسم -> تحديث حالة الشكوى تلقائياً
+  function onSectionActionsChange() {
+    const sel = $id('section_actions');
+    if (!sel) return;
+    const action = (sel.value || '').trim();
+    const status = derivedComplaintStatus(action);
+    const statusEl = $id('complaint_status');
+    if (statusEl && status) {
+      statusEl.value = status;
+    }
+  }
+
   // ربط الحدث عند DOMContentLoaded
   document.addEventListener('DOMContentLoaded', () => {
     // إنشاء عناصر إن لم تكن موجودة
@@ -125,6 +159,10 @@
     // ربط حدث التغيير على select التصنيف
     const sel = $id('complaint_category');
     if (sel) sel.addEventListener('change', onCategoryChange);
+
+    // ربط حدث التغيير على select إجراءات القسم -> تحديث حالة الشكوى تلقائياً
+    const sectionSel = $id('section_actions');
+    if (sectionSel) sectionSel.addEventListener('change', onSectionActionsChange);
 
     // ربط حفظ الأزرار للتأكد الحقل مُحدث
     hookSaveButtons();
@@ -138,8 +176,15 @@
       const obs = new MutationObserver(() => { onCategoryChange(); });
       obs.observe(sel, { attributes: true, childList: true, subtree: true });
     }
+    
+    // مراقبة تغييرات section_actions أيضاً
+    if (sectionSel) {
+      const obs2 = new MutationObserver(() => { onSectionActionsChange(); });
+      obs2.observe(sectionSel, { attributes: true, childList: true, subtree: true });
+    }
   });
 
-  // Expose function to console for testing
+  // Expose functions to console for testing
   window.complaintUrgency = complaintUrgency;
+  window.derivedComplaintStatus = derivedComplaintStatus;
 })();
