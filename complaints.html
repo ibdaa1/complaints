@@ -5,29 +5,38 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>نظام الشكاوى</title>
 <style>
-:root{--accent:#2a5b2a;--muted:#666;--card:#fafafa;--red:#d32f2f;--green:#388e3c}
+:root{--primary:#2a5b2a;--primary-dark:#1a4a1a;--gold:#c4a35a;--gold-dark:#8b7355;--muted:#666;--card:#fafafa;--red:#d32f2f;--green:#388e3c}
 body{font-family:Arial,"Noto Naskh Arabic",sans-serif;direction:rtl;background:#fff;color:#222;padding:12px}
 .container{max-width:1400px;margin:0 auto}
 .header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.h1{color:var(--accent);margin:0}
+.h1{color:var(--primary);margin:0}
 .card{background:var(--card);padding:12px;border-radius:8px;border:1px solid #eee;margin-bottom:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 .col{flex:1;min-width:160px}
-label{display:block;font-weight:700;margin-top:6px;font-size:12px}
+label{display:block;font-weight:700;margin-top:6px;font-size:12px;color:var(--primary-dark)}
 input,select,textarea,button{font-family:inherit}
 input,select,textarea{width:100%;padding:6px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;font-size:12px}
 textarea{min-height:50px}
-button{background:var(--accent);color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px}
-button.secondary{background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.08)}
-button.clear{background:#fff;color:var(--accent);border:1px solid #ddd}
-button.home-btn{background:#1976d2;margin-left:8px}
-button.new-btn{background:#388e3c}
+button{background:var(--gold);color:#fff;border:0;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold}
+button:hover{background:var(--gold-dark)}
+button.secondary{background:var(--primary);color:#fff;border:none}
+button.secondary:hover{background:var(--primary-dark)}
+button.clear{background:#fff;color:var(--primary);border:1px solid var(--gold)}
+button.clear:hover{background:#f5f5f5}
+button.home-btn{background:var(--primary);margin-left:8px}
+button.home-btn:hover{background:var(--primary-dark)}
+button.new-btn{background:var(--gold)}
+button.new-btn:hover{background:var(--gold-dark)}
+button.save-main{background:var(--primary);color:#fff;padding:12px 24px;font-size:16px;margin-top:16px}
+button.save-main:hover{background:var(--primary-dark)}
+button.print-btn{background:var(--gold);color:#fff}
+button.print-btn:hover{background:var(--gold-dark)}
 .small{font-size:11px;color:var(--muted)}
 .table-wrap{overflow:auto;margin-top:12px;max-height:600px}
 table{width:100%;border-collapse:collapse;font-size:10px}
 th,td{border:1px solid #ddd;padding:4px 6px;text-align:right;vertical-align:top;white-space:normal;word-wrap:break-word;line-height:1.3}
 td{max-width:150px}
-th{background:#f0f0f0;position:sticky;top:0;z-index:2;font-weight:700}
+th{background:var(--primary);color:#fff;position:sticky;top:0;z-index:2;font-weight:700}
 tbody tr:hover{background:#f9f9f9}
 .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .filter-col{display:flex;flex-direction:column;gap:4px}
@@ -38,10 +47,15 @@ tbody tr:hover{background:#f9f9f9}
 .product-row{border:1px solid #eee;padding:8px;border-radius:6px;margin-bottom:8px;background:#fff}
 .time-ok{color:var(--green);font-weight:700}
 .time-exceeded{color:var(--red);font-weight:700}
-.report-link{color:#1976d2;text-decoration:none;font-size:14px}
-.report-link:hover{text-decoration:underline}
-.nav-bar{display:flex;gap:8px;margin-bottom:12px;padding:8px;background:#f5f5f5;border-radius:8px}
+.report-link{color:var(--gold-dark);text-decoration:none;font-size:14px;font-weight:bold}
+.report-link:hover{text-decoration:underline;color:var(--primary)}
+.nav-bar{display:flex;gap:8px;margin-bottom:12px;padding:8px;background:var(--primary);border-radius:8px}
+.nav-bar button{background:var(--gold)}
+.section-title{color:var(--primary);border-bottom:2px solid var(--gold);padding-bottom:4px;margin:12px 0 8px 0}
+.attachment-link{color:var(--primary);text-decoration:none;font-weight:bold;display:inline-block;padding:4px 8px;background:#e8f5e9;border-radius:4px;margin-top:4px}
+.attachment-link:hover{background:#c8e6c9;text-decoration:underline}
 @media(max-width:900px){.row{flex-direction:column}.filter-row{flex-direction:column}}
+@media print{.nav-bar,.filter-row,button,.card:not(.print-card){display:none !important}.table-wrap{max-height:none !important}}
 </style>
 </head>
 <body>
@@ -50,6 +64,7 @@ tbody tr:hover{background:#f9f9f9}
   <div class="nav-bar">
     <a href="/shjfcs/index.php"><button type="button" class="home-btn">🏠 الرئيسية</button></a>
     <button type="button" id="btnNewComplaint" class="new-btn">➕ شكوى جديدة</button>
+    <button type="button" id="btnPrintComplaint" class="print-btn" style="display:none">🖨️ طباعة الشكوى</button>
   </div>
 
   <div class="header">
@@ -70,7 +85,7 @@ tbody tr:hover{background:#f9f9f9}
 
   <!-- License search -->
   <div class="card">
-    <h4 style="margin:0 0 8px 0">بحث التسجيل (رقم الترخيص)</h4>
+    <h4 class="section-title">بحث التسجيل (رقم الترخيص)</h4>
     <div class="row">
       <div class="col"><input id="license_no_search" placeholder="أدخل رقم الترخيص"></div>
       <div style="width:120px"><button id="btnSearchLicense" class="secondary">بحث تسجيل</button></div>
@@ -82,7 +97,7 @@ tbody tr:hover{background:#f9f9f9}
 
   <!-- Complaint form -->
   <div class="card" id="formCard">
-    <h4 style="margin:0 0 8px 0">نموذج الشكوى (فتح / تعديل)</h4>
+    <h4 class="section-title">نموذج الشكوى (فتح / تعديل)</h4>
     <form id="complaintForm" onsubmit="return false;">
       <input type="hidden" id="id">
 
@@ -92,7 +107,7 @@ tbody tr:hover{background:#f9f9f9}
         <div class="col"><label>اسم المنشأة</label><input id="facility_name" readonly></div>
       </div>
 
-      <h4 style="margin:12px 0 8px 0">قسم المفتش</h4>
+      <h4 class="section-title">قسم المفتش</h4>
       <div class="row">
         <div class="col">
           <label>المفتش</label>
@@ -124,9 +139,6 @@ tbody tr:hover{background:#f9f9f9}
         <div class="col"><label>تاريخ استلام المفتش</label><input id="inspector_received_datetime" type="datetime-local"></div>
       </div>
 
-      <div class="row">
-        <div class="col"><label>إجراءات القسم (صلاحية المدير)</label><select id="section_actions" class="manager-field"></select></div>
-      </div>
       <label>الإجراءات المتخذة</label><textarea id="taken_actions"></textarea>
 
       <!-- Time difference display -->
@@ -143,7 +155,7 @@ tbody tr:hover{background:#f9f9f9}
 
       <div id="lastInspection" class="last-inspect" style="display:none"></div>
 
-      <h4 style="margin:12px 0 8px 0">قسم السوبرفايزر</h4>
+      <h4 class="section-title">قسم السوبرفايزر</h4>
       <div class="row">
         <div class="col"><label>المشرف</label><span id="sup_display" class="display-name">-</span><input type="hidden" id="supervisor_empid"></div>
         <div class="col"><label>تصنيف الشكوى</label><select id="complaint_category" class="supervisor-field"></select></div>
@@ -158,31 +170,27 @@ tbody tr:hover{background:#f9f9f9}
         <button id="btnSupervisorClear" class="clear" type="button">حذف توقيع السوبرفايزر</button>
       </div>
 
-      <h4 style="margin:12px 0 8px 0">قسم المدير</h4>
+      <h4 class="section-title">قسم المدير</h4>
       <div class="row">
         <div class="col"><label>المدير</label><span id="mgr_display" class="display-name">-</span><input type="hidden" id="manager_empid"></div>
-        <div class="col"><label>حالة الشكوى (المدير)</label><select id="complaint_status" class="manager-field"></select></div>
-        <div class="col"><label>تاريخ الإغلاق</label><input id="closed_datetime" type="datetime-local" readonly></div>
+        <div class="col"><label>إجراءات القسم</label><select id="section_actions" class="manager-field"></select></div>
+        <div class="col"><label>حالة الشكوى</label><select id="complaint_status" class="manager-field"></select></div>
       </div>
       <div class="row">
         <div class="col"><label>تعليق المدير</label><textarea id="division_head_comment" class="manager-field"></textarea></div>
+        <div class="col"><label>تاريخ الإغلاق</label><input id="closed_datetime" type="datetime-local" readonly></div>
       </div>
       <div style="margin-top:8px">
         <button id="btnSaveManager" class="secondary" type="button">توقيع المدير</button>
         <button id="btnManagerClear" class="clear" type="button">حذف توقيع المدير</button>
       </div>
 
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <button id="btnSave" type="button">حفظ الشكوى</button>
-        <button id="btnReset" class="secondary" type="button">مسح النموذج</button>
-        <span id="formMsg" class="small" style="margin-right:auto"></span>
-      </div>
     </form>
   </div>
 
   <!-- Products section -->
   <div class="card">
-    <h4 style="margin:0 0 8px 0">منتجات الشكوى</h4>
+    <h4 class="section-title">منتجات الشكوى</h4>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
       <button id="btnAddProduct" type="button">إضافة صف منتج</button>
       <button id="btnSaveProducts" type="button" class="secondary">حفظ المنتجات دفعة</button>
@@ -192,7 +200,7 @@ tbody tr:hover{background:#f9f9f9}
 
   <!-- Attachments section -->
   <div class="card">
-    <h4 style="margin:0 0 8px 0">المرفقات</h4>
+    <h4 class="section-title">المرفقات</h4>
     <div class="row">
       <div class="col"><label>رفع مرفق</label><input type="file" id="attachment_file"></div>
       <div style="width:120px;display:flex;align-items:flex-end"><button id="btnUpload" type="button" class="secondary">رفع</button></div>
@@ -201,9 +209,16 @@ tbody tr:hover{background:#f9f9f9}
     <div id="attachmentLink" class="small" style="margin-top:8px"></div>
   </div>
 
+  <!-- Save Button - prominent at bottom -->
+  <div class="card" style="text-align:center;background:var(--primary);padding:16px">
+    <button id="btnSave" type="button" class="save-main">💾 حفظ الشكوى</button>
+    <button id="btnReset" class="clear" type="button" style="margin-right:12px">مسح النموذج</button>
+    <span id="formMsg" class="small" style="margin-right:auto;color:#fff"></span>
+  </div>
+
   <!-- Filters + table -->
-  <div class="card">
-    <h4 style="margin:0 0 8px 0">قائمة الشكاوى</h4>
+  <div class="card print-card">
+    <h4 class="section-title">قائمة الشكاوى</h4>
 
     <div class="filter-row">
       <div class="filter-col" style="min-width:150px"><label>بحث شامل</label><input id="searchAll" placeholder="بحث"></div>
@@ -215,7 +230,11 @@ tbody tr:hover{background:#f9f9f9}
       <div class="filter-col" style="width:140px"><label>القطاع الفرعي</label><select id="filter_sub_sector"><option value="">الكل</option></select></div>
       <div class="filter-col" style="width:120px"><label>من تاريخ</label><input id="filter_date_from" type="date"></div>
       <div class="filter-col" style="width:120px"><label>إلى تاريخ</label><input id="filter_date_to" type="date"></div>
-      <div style="display:flex;gap:8px;align-items:flex-end"><button id="btnApplyFilters" class="secondary">تطبيق</button><button id="btnResetFilters" class="clear">مسح</button></div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <button id="btnApplyFilters" class="secondary">تطبيق</button>
+        <button id="btnResetFilters" class="clear">مسح</button>
+        <button id="btnPrintTable" class="print-btn">🖨️ طباعة الجدول</button>
+      </div>
     </div>
 
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
@@ -627,10 +646,20 @@ async function openComplaintForEdit(id){
   
   $('attachment_url').value = c.attachment_url || '';
   if(c.attachment_url){
-    $('attachmentLink').innerHTML = `<a href="${escapeHtml(c.attachment_url)}" target="_blank">فتح المرفق</a>`;
+    // Fix attachment URL path to use correct format: /shjfcs/complaints/uploads/...
+    let attachUrl = c.attachment_url;
+    if(!attachUrl.startsWith('/') && !attachUrl.startsWith('http')){
+      attachUrl = '/shjfcs/complaints/uploads/' + attachUrl;
+    } else if(attachUrl.startsWith('uploads/')){
+      attachUrl = '/shjfcs/complaints/' + attachUrl;
+    }
+    $('attachmentLink').innerHTML = `<a href="${escapeHtml(attachUrl)}" target="_blank" class="attachment-link">📎 فتح المرفق: ${escapeHtml(c.attachment_url)}</a>`;
   } else {
     $('attachmentLink').innerHTML = '';
   }
+  
+  // Show print complaint button when a complaint is loaded
+  if($('btnPrintComplaint')) $('btnPrintComplaint').style.display = c.id ? 'inline-block' : 'none';
   
   // Fetch and show last inspections as table
   const inspections = await fetchLastInspectionAndActions(c.establishment_unique_id);
@@ -684,6 +713,8 @@ function onResetForm(){
   $('productsList').innerHTML = '';
   addProductRow(false);
   $('formMsg').textContent = '';
+  // Hide print complaint button when form is reset
+  if($('btnPrintComplaint')) $('btnPrintComplaint').style.display = 'none';
 }
 
 async function onSaveComplaint(){
@@ -826,8 +857,16 @@ async function onUploadAttachment(){
     const res = await fetch('complaints.php?action=upload', { method:'POST', body: fd, credentials:'same-origin' });
     const j = await res.json();
     if(!j.success){ alert('فشل الرفع'); return; }
-    $('attachment_url').value = j.path || j.filename || '';
-    $('attachmentLink').innerHTML = `<a href="${escapeHtml($('attachment_url').value)}" target="_blank">فتح المرفق</a>`;
+    const uploadedPath = j.path || j.filename || '';
+    $('attachment_url').value = uploadedPath;
+    // Fix attachment URL path to use correct format
+    let attachUrl = uploadedPath;
+    if(!attachUrl.startsWith('/') && !attachUrl.startsWith('http')){
+      attachUrl = '/shjfcs/complaints/uploads/' + attachUrl;
+    } else if(attachUrl.startsWith('uploads/')){
+      attachUrl = '/shjfcs/complaints/' + attachUrl;
+    }
+    $('attachmentLink').innerHTML = `<a href="${escapeHtml(attachUrl)}" target="_blank" class="attachment-link">📎 فتح المرفق: ${escapeHtml(uploadedPath)}</a>`;
   } catch(e){ console.error(e); alert('خطأ بالرفع'); }
 }
 
@@ -1024,7 +1063,7 @@ function bindUI(){
     if(b){
       b.addEventListener('click', function(){
         this.dataset.on = this.dataset.on === '1' ? '0' : '1';
-        this.style.background = this.dataset.on === '1' ? 'var(--accent)' : '';
+        this.style.background = this.dataset.on === '1' ? 'var(--primary)' : '';
         this.style.color = this.dataset.on === '1' ? '#fff' : '';
         renderTable();
       });
@@ -1051,6 +1090,51 @@ function bindUI(){
   $('btnAddProduct').addEventListener('click', function(){ addProductRow(true); });
   $('btnSaveProducts').addEventListener('click', saveProductsBulk);
   $('btnUpload').addEventListener('click', onUploadAttachment);
+  
+  // Print complaint button
+  if($('btnPrintComplaint')) {
+    $('btnPrintComplaint').addEventListener('click', function(){
+      const complaintId = $('id').value;
+      if(!complaintId){ alert('يرجى فتح شكوى أولاً'); return; }
+      window.open('report_complaints.html?id=' + complaintId, '_blank');
+    });
+  }
+  
+  // Print table button
+  if($('btnPrintTable')) {
+    $('btnPrintTable').addEventListener('click', function(){
+      // Open print-friendly table view in new window
+      const tableHtml = $('tableWrap').innerHTML;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="utf-8">
+          <title>طباعة قائمة الشكاوى</title>
+          <style>
+            body{font-family:Arial,"Noto Naskh Arabic",sans-serif;direction:rtl;padding:20px}
+            h1{color:#2a5b2a;text-align:center}
+            table{width:100%;border-collapse:collapse;font-size:10px}
+            th,td{border:1px solid #333;padding:4px 6px;text-align:right}
+            th{background:#2a5b2a;color:#fff}
+            .time-ok{color:#388e3c;font-weight:700}
+            .time-exceeded{color:#d32f2f;font-weight:700}
+            button{display:none}
+            @media print{button{display:none!important}}
+          </style>
+        </head>
+        <body>
+          <h1>قائمة الشكاوى</h1>
+          <p>تاريخ الطباعة: ${new Date().toLocaleString('ar-AE')}</p>
+          ${tableHtml}
+          <script>window.onload=function(){window.print();}<\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    });
+  }
   
   // Auto-compute response_speed when complaint_category changes
   if($('complaint_category')) {

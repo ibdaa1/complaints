@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>طباعة قائمة الشكاوى</title>
+    <style>
+        :root {
+            --primary: #2a5b2a;
+            --primary-dark: #1a4a1a;
+            --gold: #c4a35a;
+        }
+        
+        body {
+            font-family: Arial, "Noto Naskh Arabic", sans-serif;
+            direction: rtl;
+            padding: 20px;
+            background: #fff;
+            color: #222;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--gold);
+            padding-bottom: 10px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+        }
+        
+        .print-date {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            text-align: right;
+            vertical-align: top;
+        }
+        
+        th {
+            background: var(--primary);
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .time-ok {
+            color: #388e3c;
+            font-weight: bold;
+        }
+        
+        .time-exceeded {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        
+        .no-print {
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: var(--gold);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        button:hover {
+            background: var(--primary);
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                padding: 0;
+            }
+            
+            table {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button onclick="window.print()">🖨️ طباعة</button>
+        <button onclick="window.close()">❌ إغلاق</button>
+    </div>
+    
+    <div class="header">
+        <h1>قائمة الشكاوى</h1>
+        <div class="print-date">تاريخ الطباعة: <span id="printDate"></span></div>
+    </div>
+    
+    <div id="tableContainer">
+        <p>جاري تحميل البيانات...</p>
+    </div>
+    
+    <script>
+    (function() {
+        'use strict';
+        
+        // Set print date
+        document.getElementById('printDate').textContent = new Date().toLocaleString('ar-AE');
+        
+        // Get table HTML from URL parameter or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const tableData = urlParams.get('data');
+        
+        if (tableData) {
+            try {
+                document.getElementById('tableContainer').innerHTML = decodeURIComponent(tableData);
+            } catch (e) {
+                document.getElementById('tableContainer').innerHTML = '<p>خطأ في تحميل البيانات</p>';
+            }
+        } else {
+            // Try to get from opener window
+            if (window.opener && window.opener.document.getElementById('tableWrap')) {
+                const tableHtml = window.opener.document.getElementById('tableWrap').innerHTML;
+                document.getElementById('tableContainer').innerHTML = tableHtml;
+            } else {
+                document.getElementById('tableContainer').innerHTML = '<p>لا توجد بيانات للطباعة. يرجى فتح هذه الصفحة من قائمة الشكاوى.</p>';
+            }
+        }
+    })();
+    </script>
+</body>
+</html>
