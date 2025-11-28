@@ -106,18 +106,32 @@ tbody tr:hover{background:#f9f9f9}
       <div class="row">
         <div class="col"><label>اسم الشاكي</label><input id="complainant_name"></div>
         <div class="col"><label>هاتف الشاكي</label><input id="complainant_phone"></div>
+        <div class="col"><label>رقم شكوى الخط الساخن</label><input id="hotline_complaint_number"></div>
+      </div>
+
+      <div class="row">
         <div class="col"><label>حالة الشكوى</label><select id="complaint_status"></select></div>
+        <div class="col"><label>تصنيف الشكوى</label><select id="complaint_category"></select></div>
+        <div class="col"><label>سرعة الاستجابة</label><select id="response_speed"></select></div>
       </div>
 
       <label>موضوع الشكوى</label><textarea id="complaint_subject"></textarea>
       <label>بيان الشاكي</label><textarea id="complainant_statement"></textarea>
       <label>إجراءات المفتش</label><textarea id="inspector_followup"></textarea>
+      <label>بيان مدير الموقع</label><textarea id="site_manager_statement"></textarea>
 
       <div class="row">
         <div class="col"><label>حالة العينة</label><select id="sample_status"></select></div>
         <div class="col"><label>إجراء تواصل مع الشاكي</label><select id="complainant_contact_action"></select></div>
+        <div class="col"><label>اشتباه تسمم غذائي</label><select id="food_poisoning_suspect"></select></div>
+      </div>
+
+      <div class="row">
         <div class="col"><label>تاريخ استلام المفتش</label><input id="inspector_received_datetime" type="datetime-local"></div>
       </div>
+
+      <label>إجراءات القسم</label><textarea id="section_actions"></textarea>
+      <label>الإجراءات المتخذة</label><textarea id="taken_actions"></textarea>
 
       <!-- Time difference display -->
       <div class="row" style="margin-top:8px">
@@ -239,6 +253,9 @@ const complaintSources = ["الخط الساخن","الايميل","شخصياً
 const sampleStatusOptions = ["موجودة","غير موجودة","تم ارسال صورها بالالهاتف","تم اتلافها بواسطة الشاكى","تم ارجاعها للموقع","تم احضار العينة للقسم","لا يوجد عينة للشكوى"];
 const complainantContactActions = ["تم مقابلة الشاكى واستلام العينة","تم مقابلة الشاكى ولم يحضر العينة","تم الاتصال بالشاكى ولم يحضر العينة","تم ارسال صور العينة عبر تطبيق الرسائل","تم الاتصال بالشاكى واخذ افادته","تم الاتصال بالشاكى ولم يجيب على الهاتف","تم مقابلة الشاكى واخذ افادته شفهياً"];
 const complaintStatusOptions = ['','حفظ','قيد الاجراء','مخالفة','تم الإغلاق','التحويل الى جهة الاختصاص','اخذ عينة','انذار'];
+const complaintCategories = ["","النظافة العامة","المبانى والمنشات","طرق اعداد وحفظ","الغش التجارى","الحشرات والقوارض","المخالفات العامة","مخالفات سوق الخضار والسمك","مخالفات قسم البيطرة","اشتباة تسمم غذائى","شكوى تحتاج الى الاشتراك مع جهات اخرى","اشتباة تسمم غذائى بدون تقرير مستشفى","إجراءات احترازية"];
+const responseSpeedOptions = ["","سريع","متوسط","بطيء"];
+const foodPoisoningSuspectOptions = ["","نعم","لا","غير محدد"];
 
 function toLocalDateTime(v){ if(!v) return ''; return String(v).replace(' ','T').slice(0,16); }
 function toDBDateTimeFromLocal(v){ if(!v) return ''; const d = new Date(v); if(isNaN(d)) return ''; return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
@@ -475,9 +492,13 @@ async function openComplaintForEdit(id){
   $('inspector_received_datetime').value = toLocalDateTime(c.inspector_received_datetime);
   $('complainant_name').value = c.complainant_name || '';
   $('complainant_phone').value = c.complainant_phone || '';
+  $('hotline_complaint_number').value = c.hotline_complaint_number || '';
   $('complaint_subject').value = c.complaint_subject || '';
   $('complainant_statement').value = c.complainant_statement || '';
   $('inspector_followup').value = c.inspector_followup || '';
+  $('site_manager_statement').value = c.site_manager_statement || '';
+  $('section_actions').value = c.section_actions || '';
+  $('taken_actions').value = c.taken_actions || '';
   
   $('created_by_empid').value = c.created_by_empid || '';
   $('inspector_display').textContent = getName(c.created_by_empid) || '-';
@@ -496,6 +517,9 @@ async function openComplaintForEdit(id){
   if($('complaint_status')) $('complaint_status').value = c.complaint_status || '';
   if($('sample_status')) $('sample_status').value = c.sample_status || '';
   if($('complainant_contact_action')) $('complainant_contact_action').value = c.complainant_contact_action || '';
+  if($('complaint_category')) $('complaint_category').value = c.complaint_category || '';
+  if($('response_speed')) $('response_speed').value = c.response_speed || '';
+  if($('food_poisoning_suspect')) $('food_poisoning_suspect').value = c.food_poisoning_suspect || '';
   
   // Calculate and display time differences
   const responseTime = calcTimeDiff(c.received_datetime, c.inspector_received_datetime, 24);
@@ -573,7 +597,7 @@ function onResetForm(){
 async function onSaveComplaint(){
   const id = $('id').value;
   const payload = {};
-  const fields = ['establishment_unique_id','received_datetime','complaints_source','complainant_name','complainant_phone','complainant_statement','complaint_subject','inspector_followup','sample_status','complainant_contact_action','inspector_received_datetime','supervisor_comment','followup_datetime','division_head_comment','closed_datetime','complaint_status'];
+  const fields = ['establishment_unique_id','received_datetime','complaints_source','hotline_complaint_number','complainant_name','complainant_phone','complainant_statement','complaint_subject','inspector_followup','site_manager_statement','sample_status','complainant_contact_action','inspector_received_datetime','supervisor_comment','followup_datetime','division_head_comment','closed_datetime','complaint_status','complaint_category','response_speed','section_actions','food_poisoning_suspect','taken_actions'];
   fields.forEach(k => {
     const el = $(k); if(!el) return;
     let v = el.value || '';
@@ -910,6 +934,9 @@ async function init(){
   populateSelect('sample_status', sampleStatusOptions, true, '--');
   populateSelect('complainant_contact_action', complainantContactActions, true, '--');
   populateSelect('complaint_status', complaintStatusOptions, true, '--');
+  populateSelect('complaint_category', complaintCategories, true, '--');
+  populateSelect('response_speed', responseSpeedOptions, true, '--');
+  populateSelect('food_poisoning_suspect', foodPoisoningSuspectOptions, true, '--');
   bindUI();
   await loadUserAndEmployees();
   await loadComplaints();
